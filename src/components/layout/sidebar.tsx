@@ -77,14 +77,14 @@ export function Sidebar() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                             <Sparkles className="h-3.5 w-3.5 text-violet-600" />
-                            <span className="text-xs font-semibold">Тариф «Профи»</span>
+                            <span className="text-xs font-semibold">{t('proPlan')}</span>
                         </div>
                         <Badge variant="outline" className="text-[10px] bg-background">
-                            $49/мес
+                            {t('proPlanPrice')}
                         </Badge>
                     </div>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                        Использовано 1 482 / 5 000 сообщений
+                        {t('usedMessages', { used: '1 482', total: '5 000' })}
                     </p>
                 </Link>
             </div>

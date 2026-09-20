@@ -77,7 +77,7 @@ export default function DashboardOverviewPage() {
                         <div className="text-2xl sm:text-3xl font-bold font-mono">1,482</div>
                         <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1 font-medium">
                             <TrendingUp className="h-3 w-3" />
-                            <span>+24% по сравнению с прошлым мес.</span>
+                            <span>{t('kpiTotalGrowth')}</span>
                         </p>
                     </CardContent>
                 </Card>
@@ -92,7 +92,7 @@ export default function DashboardOverviewPage() {
                     <CardContent>
                         <div className="text-2xl sm:text-3xl font-bold font-mono text-primary">84.6%</div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            1,254 диалога закрыто без участия человека
+                            {t('kpiAiAutomatedDesc')}
                         </p>
                     </CardContent>
                 </Card>
@@ -107,7 +107,7 @@ export default function DashboardOverviewPage() {
                     <CardContent>
                         <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-600">4.2 сек</div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            против 18.5 мин у человека (SLA 99.8%)
+                            {t('kpiAvgResponseDesc')}
                         </p>
                     </CardContent>
                 </Card>
@@ -122,7 +122,7 @@ export default function DashboardOverviewPage() {
                     <CardContent>
                         <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-600">+48,200 ₴</div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            142 сконвертированных лида в этом месяце
+                            {t('kpiSavedRevenueDesc')}
                         </p>
                     </CardContent>
                 </Card>
@@ -139,7 +139,7 @@ export default function DashboardOverviewPage() {
                                 <span>{t('recentAttention')}</span>
                             </CardTitle>
                             <CardDescription className="text-xs mt-0.5">
-                                Диалоги, переданные AI человеку из-за нестандартных запросов
+                                {t('recentAttentionSubtitle')}
                             </CardDescription>
                         </div>
                         <Link href={`/${locale}/inbox`}>
@@ -168,7 +168,7 @@ export default function DashboardOverviewPage() {
                                                 {conv.contact.name}
                                             </p>
                                             <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200">
-                                                {conv.priority === 'urgent' ? 'Срочно' : 'Требует ответа'}
+                                                {conv.priority === 'urgent' ? tCommon('urgent') : tCommon('needsReply')}
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground truncate mt-0.5">
@@ -182,7 +182,7 @@ export default function DashboardOverviewPage() {
                                         {conv.lastMessageAt}
                                     </span>
                                     <div className="text-xs font-semibold text-primary mt-1">
-                                        Ответить →
+                                        {tCommon('replyArrow')}
                                     </div>
                                 </div>
                             </Link>
@@ -195,7 +195,7 @@ export default function DashboardOverviewPage() {
                     <CardHeader className="pb-3 border-b">
                         <CardTitle className="text-base">{t('channelDistribution')}</CardTitle>
                         <CardDescription className="text-xs">
-                            Активность входящих сообщений по адаптерам
+                            {t('channelDistributionDesc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-4 space-y-4">
@@ -271,7 +271,7 @@ export default function DashboardOverviewPage() {
                             <span>{t('liveEventStream')}</span>
                         </CardTitle>
                         <CardDescription className="text-xs">
-                            Асинхронные события в формате спецификации CNCF CloudEvents v1.0
+                            {t('liveEventStreamDesc')}
                         </CardDescription>
                     </div>
                     <Badge variant="outline" className="font-mono text-[10px] bg-muted/60">

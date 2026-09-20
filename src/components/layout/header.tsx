@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 
 export function Header() {
     const t = useTranslations('common');
+    const tNav = useTranslations('nav');
+    const tInbox = useTranslations('inbox');
     const locale = useLocale();
     const pathname = usePathname();
     const { theme, setTheme } = useTheme();
@@ -27,7 +29,7 @@ export function Header() {
     }
 
     function handleBellClick() {
-        toast.info('Все ассистенты работают в штатном режиме (SLA 99.8%)');
+        toast.info(tInbox('allAssistantsWorkingOk'));
     }
 
     return (
@@ -47,7 +49,7 @@ export function Header() {
                 <Link href={`/${locale}`}>
                     <Button variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-xs text-muted-foreground hover:text-foreground">
                         <Home className="h-3.5 w-3.5" />
-                        <span>Лендинг</span>
+                        <span>{tNav('landing')}</span>
                     </Button>
                 </Link>
 
@@ -85,7 +87,7 @@ export function Header() {
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={toggleTheme}
-                    title="Сменить тему"
+                    title={t('toggleTheme')}
                 >
                     <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                     <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

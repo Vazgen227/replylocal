@@ -19,11 +19,12 @@ import { toast } from 'sonner';
 
 export default function SettingsPage() {
     const t = useTranslations('settings');
+    const tLanding = useTranslations('landing');
     const tCommon = useTranslations('common');
 
     // Profile State
     const [companyName, setCompanyName] = useState('АвтоТехЦентр «ReplyLocal Motors»');
-    const [industry, setIndustry] = useState('Автосервис и продажа автозапчастей');
+    const [industry, setIndustry] = useState('Автосервіс та продаж автозапчастин');
     const [timezone, setTimezone] = useState('Europe/Kyiv (UTC+03:00 / RFC 3339)');
     const [currency, setCurrency] = useState('UAH (₴) - ISO 4217');
 
@@ -37,9 +38,9 @@ export default function SettingsPage() {
 
     // Team members
     const [team] = useState([
-        { id: 'usr_1', name: 'Алексей Коваленко', email: 'alex@replylocal.motors', role: 'Владелец (Owner)' },
-        { id: 'usr_2', name: 'Мария Смирнова', email: 'maria@replylocal.motors', role: 'Старший менеджер (Admin)' },
-        { id: 'usr_3', name: 'Денис Петров', email: 'denis@replylocal.motors', role: 'Оператор смены (Agent)' },
+        { id: 'usr_1', name: 'Олексій Коваленко', email: 'alex@replylocal.motors', role: 'Власник (Owner)' },
+        { id: 'usr_2', name: 'Марія Смірнова', email: 'maria@replylocal.motors', role: 'Старший менеджер (Admin)' },
+        { id: 'usr_3', name: 'Денис Петров', email: 'denis@replylocal.motors', role: 'Оператор зміни (Agent)' },
     ]);
 
     function handleSaveGeneral(e: React.FormEvent) {
@@ -49,7 +50,7 @@ export default function SettingsPage() {
 
     function handleUpgradePlan(plan: 'start' | 'pro' | 'enterprise') {
         setActivePlan(plan);
-        toast.success(`Тарифный план успешно обновлен на «${plan.toUpperCase()}»`);
+        toast.success(t('planUpdatedToast', { plan: plan.toUpperCase() }));
     }
 
     return (
@@ -91,7 +92,7 @@ export default function SettingsPage() {
                                     <span>{t('tabGeneral')}</span>
                                 </CardTitle>
                                 <CardDescription className="text-xs">
-                                    Основные реквизиты компании и региональные стандарты
+                                    {t('generalProfileDesc')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -123,7 +124,7 @@ export default function SettingsPage() {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs">Основная валюта (ISO 4217)</Label>
+                                        <Label className="text-xs">{t('currencyLabel')}</Label>
                                         <Input
                                             value={currency}
                                             onChange={(e) => setCurrency(e.target.value)}
@@ -147,10 +148,10 @@ export default function SettingsPage() {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Bot className="h-4 w-4 text-primary" />
-                                <span>Параметры работы AI-ассистента</span>
+                                <span>{t('aiSettingsTitle')}</span>
                             </CardTitle>
                             <CardDescription className="text-xs">
-                                Тонкая настройка точности, автоответов и порогов эскалации
+                                {t('aiSettingsDesc')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -167,16 +168,16 @@ export default function SettingsPage() {
                                         className="w-32 font-mono text-xs"
                                     />
                                     <span className="text-xs text-muted-foreground">
-                                        (Текущее значение: 85% уверенности)
+                                        {t('currentConfidence', { val: '85' })}
                                     </span>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between py-2 border-t">
                                 <div className="space-y-0.5">
-                                    <Label className="text-xs font-semibold">Автоматический Human Handoff</Label>
+                                    <Label className="text-xs font-semibold">{t('autoHandoffTitle')}</Label>
                                     <p className="text-[11px] text-muted-foreground">
-                                        Передавать управление человеку при обнаружении стоп-слов или негатива
+                                        {t('autoHandoffDesc')}
                                     </p>
                                 </div>
                                 <Switch checked={autoHandoff} onCheckedChange={setAutoHandoff} />
@@ -184,9 +185,9 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between py-2 border-t">
                                 <div className="space-y-0.5">
-                                    <Label className="text-xs font-semibold">AI Автопилот в выходные и праздники</Label>
+                                    <Label className="text-xs font-semibold">{t('weekendAiTitle')}</Label>
                                     <p className="text-[11px] text-muted-foreground">
-                                        Брать лиды и записывать на рабочие дни 24/7 без участия оператора
+                                        {t('weekendAiDesc')}
                                     </p>
                                 </div>
                                 <Switch checked={weekendAiMode} onCheckedChange={setWeekendAiMode} />
@@ -194,7 +195,7 @@ export default function SettingsPage() {
                         </CardContent>
                         <CardFooter className="border-t bg-muted/10 justify-end">
                             <Button size="sm" onClick={() => toast.success(tCommon('saved'))}>
-                                {tCommon('save')} параметры AI
+                                {t('saveAiParams')}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -205,10 +206,10 @@ export default function SettingsPage() {
                     <Card className="shadow-xs border-primary/30 bg-primary/5">
                         <CardHeader className="flex flex-row items-center justify-between pb-3">
                             <div>
-                                <Badge className="mb-1 text-xs">Текущий план: {activePlan.toUpperCase()}</Badge>
-                                <CardTitle className="text-lg">Тариф «Профи» ($49 / месяц)</CardTitle>
+                                <Badge className="mb-1 text-xs">{t('currentPlanBadge', { plan: activePlan.toUpperCase() })}</Badge>
+                                <CardTitle className="text-lg">{t('currentPlanTitle')}</CardTitle>
                                 <CardDescription className="text-xs">
-                                    Следующее списание: 01 октября 2026 • Лимит сообщений: 5 000 / мес (использовано 1 482)
+                                    {t('billingNextCharge')}
                                 </CardDescription>
                             </div>
                             <CreditCard className="h-8 w-8 text-primary opacity-80" />
@@ -219,14 +220,14 @@ export default function SettingsPage() {
                         {/* Start */}
                         <Card className="flex flex-col justify-between shadow-xs">
                             <CardHeader>
-                                <CardTitle className="text-base">Старт</CardTitle>
-                                <CardDescription className="text-xs">Для небольшого бизнеса</CardDescription>
-                                <div className="text-2xl font-bold font-mono mt-2">$19 <span className="text-xs text-muted-foreground font-sans">/ мес</span></div>
+                                <CardTitle className="text-base">{tLanding('planStart')}</CardTitle>
+                                <CardDescription className="text-xs">{tLanding('planStartDesc')}</CardDescription>
+                                <div className="text-2xl font-bold font-mono mt-2">{tLanding('planStartPrice')} <span className="text-xs text-muted-foreground font-sans">{tLanding('planStartPeriod')}</span></div>
                             </CardHeader>
                             <CardContent className="text-xs text-muted-foreground space-y-2">
-                                <div>• До 2 каналов (Telegram, WhatsApp)</div>
-                                <div>• До 1 000 сообщений в месяц</div>
-                                <div>• Базовая база знаний</div>
+                                <div>• {tLanding('planStartF1')}</div>
+                                <div>• {tLanding('planStartF2')}</div>
+                                <div>• {tLanding('planStartF3')}</div>
                             </CardContent>
                             <CardFooter>
                                 <Button
@@ -235,7 +236,7 @@ export default function SettingsPage() {
                                     className="w-full"
                                     onClick={() => handleUpgradePlan('start')}
                                 >
-                                    {activePlan === 'start' ? 'Текущий тариф' : 'Перейти на Старт'}
+                                    {activePlan === 'start' ? t('currentPlanBtn') : t('switchStartBtn')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -244,21 +245,21 @@ export default function SettingsPage() {
                         <Card className="flex flex-col justify-between shadow-xs border-2 border-primary">
                             <CardHeader>
                                 <div className="flex justify-between items-center">
-                                    <CardTitle className="text-base">Профи</CardTitle>
-                                    <Badge className="text-[10px]">Активен</Badge>
+                                    <CardTitle className="text-base">{tLanding('planPro')}</CardTitle>
+                                    <Badge className="text-[10px]">{tCommon('active')}</Badge>
                                 </div>
-                                <CardDescription className="text-xs">Для растущих компаний и селлеров</CardDescription>
-                                <div className="text-2xl font-bold font-mono mt-2">$49 <span className="text-xs text-muted-foreground font-sans">/ мес</span></div>
+                                <CardDescription className="text-xs">{tLanding('planProDesc')}</CardDescription>
+                                <div className="text-2xl font-bold font-mono mt-2">{tLanding('planProPrice')} <span className="text-xs text-muted-foreground font-sans">{tLanding('planProPeriod')}</span></div>
                             </CardHeader>
                             <CardContent className="text-xs text-muted-foreground space-y-2">
-                                <div>• До 6 каналов (+ Instagram, Ozon, WB)</div>
-                                <div>• До 5 000 сообщений в месяц</div>
-                                <div>• RAG + Паспорт товара</div>
-                                <div>• Приоритетный SLA</div>
+                                <div>• {tLanding('planProF1')}</div>
+                                <div>• {tLanding('planProF2')}</div>
+                                <div>• {tLanding('planProF3')}</div>
+                                <div>• {tLanding('planProF4')}</div>
                             </CardContent>
                             <CardFooter>
                                 <Button size="sm" className="w-full" disabled>
-                                    Текущий тариф
+                                    {t('currentPlanBtn')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -266,14 +267,14 @@ export default function SettingsPage() {
                         {/* Enterprise */}
                         <Card className="flex flex-col justify-between shadow-xs">
                             <CardHeader>
-                                <CardTitle className="text-base">Корпоративный</CardTitle>
-                                <CardDescription className="text-xs">Для сетей и крупных брендов</CardDescription>
-                                <div className="text-2xl font-bold font-mono mt-2">Custom</div>
+                                <CardTitle className="text-base">{tLanding('planEnterprise')}</CardTitle>
+                                <CardDescription className="text-xs">{tLanding('planEnterpriseDesc')}</CardDescription>
+                                <div className="text-2xl font-bold font-mono mt-2">{tLanding('planEnterprisePrice')}</div>
                             </CardHeader>
                             <CardContent className="text-xs text-muted-foreground space-y-2">
-                                <div>• Неограниченно каналов и диалогов</div>
-                                <div>• White-label адаптеры и iPaaS</div>
-                                <div>• Выделенный SLA 99.9%</div>
+                                <div>• {tLanding('planEnterpriseF1')}</div>
+                                <div>• {tLanding('planEnterpriseF2')}</div>
+                                <div>• {tLanding('planEnterpriseF3')}</div>
                             </CardContent>
                             <CardFooter>
                                 <Button
@@ -282,7 +283,7 @@ export default function SettingsPage() {
                                     className="w-full"
                                     onClick={() => handleUpgradePlan('enterprise')}
                                 >
-                                    Запросить Enterprise
+                                    {t('requestEnterpriseBtn')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -293,11 +294,11 @@ export default function SettingsPage() {
                 <TabsContent value="team" className="space-y-4">
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                            Сотрудники и операторы, имеющие доступ к диалогам и базе знаний
+                            {t('teamSubtitle')}
                         </p>
-                        <Button size="sm" onClick={() => toast.info('Приглашение отправлено на указанный email')}>
+                        <Button size="sm" onClick={() => toast.info(t('inviteSentToast'))}>
                             <Plus className="h-4 w-4 mr-1.5" />
-                            <span>Пригласить сотрудника</span>
+                            <span>{t('inviteTeamMember')}</span>
                         </Button>
                     </div>
 

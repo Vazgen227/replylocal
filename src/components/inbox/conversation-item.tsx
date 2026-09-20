@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
     MessageCircle,
     Send,
@@ -30,14 +31,6 @@ const channelIcons: Record<ChannelType, React.ElementType> = {
     instagram: InstagramIcon,
 };
 
-const statusLabels = {
-    new: 'New',
-    ai_handling: 'AI handling',
-    waiting_for_human: 'Needs attention',
-    human_handling: 'Human',
-    resolved: 'Resolved',
-} as const;
-
 const statusStyles = {
     new: 'bg-blue-50 text-blue-700 border-blue-200',
     ai_handling: 'bg-violet-50 text-violet-700 border-violet-200',
@@ -59,6 +52,7 @@ export function ConversationItem({
                                      active,
                                      onSelect,
                                  }: ConversationItemProps) {
+    const t = useTranslations('inbox');
     const ChannelIcon = channelIcons[conversation.channel.type];
 
     return (
@@ -105,7 +99,7 @@ export function ConversationItem({
                                 statusStyles[conversation.status]
                             )}
                         >
-                            {statusLabels[conversation.status]}
+                            {t(conversation.status)}
                         </Badge>
 
                         {conversation.unreadCount > 0 && (

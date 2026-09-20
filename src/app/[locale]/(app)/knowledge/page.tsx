@@ -52,14 +52,14 @@ export default function KnowledgeBasePage() {
 
     // Form states
     const [newServiceName, setNewServiceName] = useState('');
-    const [newServiceCategory, setNewServiceCategory] = useState('ТО и сервис');
+    const [newServiceCategory, setNewServiceCategory] = useState('ТО / Сервіс');
     const [newServicePrice, setNewServicePrice] = useState('650');
     const [newServiceDuration, setNewServiceDuration] = useState('45');
     const [newServiceDesc, setNewServiceDesc] = useState('');
 
     const [newPassportTitle, setNewPassportTitle] = useState('');
     const [newPassportSku, setNewPassportSku] = useState('');
-    const [newPassportMarketplace, setNewPassportMarketplace] = useState<'Ozon' | 'Wildberries' | 'Amazon'>('Ozon');
+    const [newPassportMarketplace, setNewPassportMarketplace] = useState<'Ozon' | 'Wildberries' | 'Amazon' | 'Shopify'>('Amazon');
     const [newPassportPrice, setNewPassportPrice] = useState('1490');
 
     const [newRuleTitle, setNewRuleTitle] = useState('');
@@ -75,38 +75,38 @@ export default function KnowledgeBasePage() {
             price: Number(newServicePrice) || 500,
             currency: 'UAH',
             durationMinutes: Number(newServiceDuration) || 30,
-            description: newServiceDesc || 'Стандартная услуга автосервиса.',
+            description: newServiceDesc || 'Стандартна послуга автосервісу.',
             popular: false,
         };
         setServices((prev) => [newService, ...prev]);
         setIsAddServiceOpen(false);
         setNewServiceName('');
         setNewServiceDesc('');
-        toast.success('Услуга успешно добавлена в прайс-лист!');
+        toast.success(t('serviceCreated'));
     }
 
     function handleDeleteService(id: string) {
         setServices((prev) => prev.filter((s) => s.id !== id));
-        toast.info('Услуга удалена из базы знаний');
+        toast.info(t('serviceDeleted'));
     }
 
     function handleCreatePassport(e: React.FormEvent) {
         e.preventDefault();
         const newPassport: ProductPassport = {
             id: `pass_${crypto.randomUUID()}`,
-            sku: newPassportSku || 'OZ-NEW-ITEM',
+            sku: newPassportSku || 'SKU-NEW-ITEM',
             marketplace: newPassportMarketplace,
             title: newPassportTitle,
             price: Number(newPassportPrice) || 1000,
-            currency: 'RUB',
+            currency: 'UAH',
             specifications: {
-                'Статус': 'В наличии',
-                'Гарантия': 'Официальная гарантия производителя',
+                'Статус': 'В наявності',
+                'Гарантія': 'Офіційна гарантія виробника',
             },
             commonQuestions: [
                 {
-                    question: 'Подходит ли для стандартной комплектации?',
-                    answer: 'Да, товар полностью соответствует штатным посадочным местам.',
+                    question: 'Чи підходить для стандартної комплектації?',
+                    answer: 'Так, товар повністю відповідає штатним посадковим місцям.',
                 },
             ],
         };
@@ -114,12 +114,12 @@ export default function KnowledgeBasePage() {
         setIsAddPassportOpen(false);
         setNewPassportTitle('');
         setNewPassportSku('');
-        toast.success('Паспорт товара успешно синхронизирован с AI!');
+        toast.success(t('passportCreated'));
     }
 
     function handleDeletePassport(id: string) {
         setPassports((prev) => prev.filter((p) => p.id !== id));
-        toast.info('Паспорт товара удален');
+        toast.info(t('passportDeleted'));
     }
 
     function handleCreateRule(e: React.FormEvent) {
@@ -136,16 +136,16 @@ export default function KnowledgeBasePage() {
         setNewRuleTitle('');
         setNewRuleContent('');
         setNewRuleKeywords('');
-        toast.success('Правило сохранено и подключено к RAG-модулю!');
+        toast.success(t('ruleCreated'));
     }
 
     function handleDeleteRule(id: string) {
         setRules((prev) => prev.filter((r) => r.id !== id));
-        toast.info('Правило удалено');
+        toast.info(t('ruleDeleted'));
     }
 
     function handleSavePersona() {
-        toast.success('Настройки AI Persona и Guardrails успешно обновлены!');
+        toast.success(t('personaSaved'));
     }
 
     return (
@@ -183,7 +183,7 @@ export default function KnowledgeBasePage() {
                 <TabsContent value="services" className="space-y-4">
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                            AI использует эти данные для точного ответа на ценовые запросы в мессенджерах
+                            {t('servicesTabDesc')}
                         </p>
                         <Button size="sm" onClick={() => setIsAddServiceOpen(true)} className="gap-1.5">
                             <Plus className="h-4 w-4" />
@@ -208,7 +208,7 @@ export default function KnowledgeBasePage() {
                                             </div>
                                             <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                                 <Clock className="h-3 w-3" />
-                                                <span>~{service.durationMinutes} мин</span>
+                                                <span>~{service.durationMinutes} {tCommon('loading') === 'Завантаження...' ? 'хв' : 'мин'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -221,7 +221,7 @@ export default function KnowledgeBasePage() {
                                 <CardFooter className="pt-0 flex justify-between items-center text-xs text-muted-foreground border-t p-3 bg-muted/20">
                                     <span className="flex items-center gap-1 text-emerald-600 font-medium">
                                         <CheckCircle2 className="h-3.5 w-3.5" />
-                                        Активно для AI RAG
+                                        {t('activeRagBadge')}
                                     </span>
                                     <Button
                                         variant="ghost"
@@ -241,7 +241,7 @@ export default function KnowledgeBasePage() {
                 <TabsContent value="passports" className="space-y-4">
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                            Спецификации и ответы на частые вопросы покупателей на Ozon, Wildberries и Amazon
+                            {t('passportsTabDesc')}
                         </p>
                         <Button size="sm" onClick={() => setIsAddPassportOpen(true)} className="gap-1.5">
                             <Plus className="h-4 w-4" />
@@ -283,7 +283,7 @@ export default function KnowledgeBasePage() {
                                 <CardContent className="pt-4 space-y-3">
                                     <div>
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                                            Характеристики (Specs):
+                                            {t('productSpecs')}:
                                         </p>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                             {Object.entries(passport.specifications).map(([key, val]) => (
@@ -297,7 +297,7 @@ export default function KnowledgeBasePage() {
 
                                     <div>
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                                            Частые вопросы покупателей (Buyer FAQ):
+                                            {t('productFaq')}:
                                         </p>
                                         <div className="space-y-2">
                                             {passport.commonQuestions.map((q, idx) => (
@@ -318,7 +318,7 @@ export default function KnowledgeBasePage() {
                 <TabsContent value="faq" className="space-y-4">
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                            Регламенты работы, гарантии, условия оплаты и триггеры передачи оператору
+                            {t('faqTabDesc')}
                         </p>
                         <Button size="sm" onClick={() => setIsAddRuleOpen(true)} className="gap-1.5">
                             <Plus className="h-4 w-4" />
@@ -370,7 +370,7 @@ export default function KnowledgeBasePage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="text-xs">Системный промпт роли AI</Label>
+                                <Label className="text-xs">{t('systemPromptLabel')}</Label>
                                 <Textarea
                                     rows={5}
                                     value={persona.systemPrompt}
@@ -381,7 +381,7 @@ export default function KnowledgeBasePage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs">Порог автоответа (Confidence SLA)</Label>
+                                    <Label className="text-xs">{t('autoReplyConfidenceLabel')}</Label>
                                     <Input
                                         type="number"
                                         step="0.05"
@@ -397,12 +397,12 @@ export default function KnowledgeBasePage() {
                                         className="text-xs font-mono"
                                     />
                                     <p className="text-[11px] text-muted-foreground">
-                                        Если уверенность AI ниже 0.85, диалог маркируется для проверки оператором.
+                                        {t('autoReplyConfidenceHint')}
                                     </p>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs">Сообщение в нерабочие часы</Label>
+                                    <Label className="text-xs">{t('offHoursMessageLabel')}</Label>
                                     <Input
                                         value={persona.operatingHours.autoReplyOffHoursMessage}
                                         onChange={(e) =>
@@ -421,7 +421,7 @@ export default function KnowledgeBasePage() {
                         </CardContent>
                         <CardFooter className="border-t bg-muted/10 justify-end">
                             <Button size="sm" onClick={handleSavePersona}>
-                                {tCommon('save')} настройки
+                                {t('savePersonaBtn')}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -450,9 +450,9 @@ export default function KnowledgeBasePage() {
             <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Добавить услугу в базу знаний</DialogTitle>
+                        <DialogTitle>{t('addServiceModalTitle')}</DialogTitle>
                         <DialogDescription>
-                            Укажите параметры услуги для обучения AI-ассистента
+                            {t('addServiceModalDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreateService} className="space-y-3">
@@ -460,7 +460,7 @@ export default function KnowledgeBasePage() {
                             <Label className="text-xs">{t('serviceName')}</Label>
                             <Input
                                 required
-                                placeholder="Замена тормозных дисков"
+                                placeholder="Заміна мастила та фільтра"
                                 value={newServiceName}
                                 onChange={(e) => setNewServiceName(e.target.value)}
                             />
@@ -476,7 +476,7 @@ export default function KnowledgeBasePage() {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs">{t('serviceDuration')} (мин)</Label>
+                                <Label className="text-xs">{t('serviceDuration')}</Label>
                                 <Input
                                     type="number"
                                     required
@@ -493,9 +493,9 @@ export default function KnowledgeBasePage() {
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label className="text-xs">Описание и что входит в работу</Label>
+                            <Label className="text-xs">{t('serviceDescLabel')}</Label>
                             <Textarea
-                                placeholder="Детальное описание услуги для RAG"
+                                placeholder={t('serviceDescPlaceholder')}
                                 value={newServiceDesc}
                                 onChange={(e) => setNewServiceDesc(e.target.value)}
                             />
@@ -514,9 +514,9 @@ export default function KnowledgeBasePage() {
             <Dialog open={isAddPassportOpen} onOpenChange={setIsAddPassportOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Создать Паспорт товара для Маркетплейса</DialogTitle>
+                        <DialogTitle>{t('addPassportModalTitle')}</DialogTitle>
                         <DialogDescription>
-                            AI будет отвечать на вопросы покупателей по этой карточке
+                            {t('addPassportModalDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreatePassport} className="space-y-3">
@@ -524,7 +524,7 @@ export default function KnowledgeBasePage() {
                             <Label className="text-xs">{t('productTitle')}</Label>
                             <Input
                                 required
-                                placeholder="Светодиодные лампы H7 LED 6000K"
+                                placeholder="LED Лампи H7 6000K"
                                 value={newPassportTitle}
                                 onChange={(e) => setNewPassportTitle(e.target.value)}
                             />
@@ -534,25 +534,26 @@ export default function KnowledgeBasePage() {
                                 <Label className="text-xs">{t('productSku')}</Label>
                                 <Input
                                     required
-                                    placeholder="OZ-LED-H7"
+                                    placeholder="SKU-LED-H7"
                                     value={newPassportSku}
                                     onChange={(e) => setNewPassportSku(e.target.value)}
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs">Маркетплейс</Label>
+                                <Label className="text-xs">{t('marketplaceLabel')}</Label>
                                 <select
                                     className="w-full h-9 rounded-md border bg-background px-3 text-xs"
                                     value={newPassportMarketplace}
                                     onChange={(e) =>
                                         setNewPassportMarketplace(
-                                            e.target.value as 'Ozon' | 'Wildberries' | 'Amazon'
+                                            e.target.value as 'Ozon' | 'Wildberries' | 'Amazon' | 'Shopify'
                                         )
                                     }
                                 >
+                                    <option value="Amazon">Amazon</option>
+                                    <option value="Shopify">Shopify</option>
                                     <option value="Ozon">Ozon</option>
                                     <option value="Wildberries">Wildberries</option>
-                                    <option value="Amazon">Amazon</option>
                                 </select>
                             </div>
                         </div>
@@ -568,7 +569,7 @@ export default function KnowledgeBasePage() {
                             <Button type="button" variant="ghost" onClick={() => setIsAddPassportOpen(false)}>
                                 {tCommon('cancel')}
                             </Button>
-                            <Button type="submit">Создать паспорт</Button>
+                            <Button type="submit">{t('createPassportBtn')}</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -578,35 +579,35 @@ export default function KnowledgeBasePage() {
             <Dialog open={isAddRuleOpen} onOpenChange={setIsAddRuleOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Добавить правило / FAQ</DialogTitle>
+                        <DialogTitle>{t('addRuleModalTitle')}</DialogTitle>
                         <DialogDescription>
-                            Регламенты и условия обслуживания клиентов
+                            {t('addRuleModalDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreateRule} className="space-y-3">
                         <div className="space-y-1">
-                            <Label className="text-xs">Название регламента</Label>
+                            <Label className="text-xs">{t('ruleTitleLabel')}</Label>
                             <Input
                                 required
-                                placeholder="Правила возврата и гарантии"
+                                placeholder={t('ruleTitleLabel')}
                                 value={newRuleTitle}
                                 onChange={(e) => setNewRuleTitle(e.target.value)}
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label className="text-xs">Текст правила / ответа</Label>
+                            <Label className="text-xs">{t('ruleContentLabel')}</Label>
                             <Textarea
                                 required
                                 rows={4}
-                                placeholder="Опишите правило максимально подробно"
+                                placeholder={t('ruleContentLabel')}
                                 value={newRuleContent}
                                 onChange={(e) => setNewRuleContent(e.target.value)}
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label className="text-xs">Ключевые слова-триггеры (через запятую)</Label>
+                            <Label className="text-xs">{t('ruleKeywordsLabel')}</Label>
                             <Input
-                                placeholder="гарантия, брак, возврат, чек"
+                                placeholder={t('ruleKeywordsHint')}
                                 value={newRuleKeywords}
                                 onChange={(e) => setNewRuleKeywords(e.target.value)}
                             />
@@ -615,7 +616,7 @@ export default function KnowledgeBasePage() {
                             <Button type="button" variant="ghost" onClick={() => setIsAddRuleOpen(false)}>
                                 {tCommon('cancel')}
                             </Button>
-                            <Button type="submit">Сохранить правило</Button>
+                            <Button type="submit">{t('saveRuleBtn')}</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

@@ -39,7 +39,7 @@ export default function LoginPage() {
                     </div>
                     <CardTitle className="text-2xl font-bold">{t('login')}</CardTitle>
                     <CardDescription className="text-xs">
-                        Войдите в личный кабинет ReplyLocal AI
+                        {t('loginSubtitle')}
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
@@ -81,7 +81,7 @@ export default function LoginPage() {
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 pt-2">
                         <Button type="submit" className="w-full h-10 gap-2" disabled={isLoading}>
-                            <span>{isLoading ? 'Вход...' : t('login')}</span>
+                            <span>{isLoading ? t('loggingIn') : t('login')}</span>
                             <ArrowRight className="h-4 w-4" />
                         </Button>
 

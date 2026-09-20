@@ -41,19 +41,19 @@ export default function RegisterPage() {
                     </div>
                     <CardTitle className="text-2xl font-bold">{t('register')}</CardTitle>
                     <CardDescription className="text-xs">
-                        Создайте рабочее пространство для автоматизации коммуникаций
+                        {t('registerSubtitle')}
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-3">
                         <div className="space-y-1">
-                            <Label htmlFor="name" className="text-xs">Ваше имя</Label>
+                            <Label htmlFor="name" className="text-xs">{t('yourName')}</Label>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="name"
                                     required
-                                    placeholder="Алексей"
+                                    placeholder={t('namePlaceholder')}
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     className="pl-9 text-sm"
@@ -62,13 +62,13 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-1">
-                            <Label htmlFor="biz" className="text-xs">Название бизнеса</Label>
+                            <Label htmlFor="biz" className="text-xs">{t('bizName')}</Label>
                             <div className="relative">
                                 <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="biz"
                                     required
-                                    placeholder="Автосервис Мастер"
+                                    placeholder={t('bizPlaceholder')}
                                     value={bizName}
                                     onChange={(e) => setBizName(e.target.value)}
                                     className="pl-9 text-sm"
@@ -110,7 +110,7 @@ export default function RegisterPage() {
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 pt-2">
                         <Button type="submit" className="w-full h-10 gap-2" disabled={isLoading}>
-                            <span>{isLoading ? 'Регистрация...' : t('register')}</span>
+                            <span>{isLoading ? t('registering') : t('register')}</span>
                             <ArrowRight className="h-4 w-4" />
                         </Button>
 

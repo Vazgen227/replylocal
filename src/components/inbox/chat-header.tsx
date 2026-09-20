@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
     MessageCircle,
     Send,
@@ -26,17 +27,10 @@ const channelIcons: Record<ChannelType, React.ElementType> = {
     instagram: InstagramIcon,
 };
 
-const statusLabels = {
-    new: 'New',
-    ai_handling: 'AI handling',
-    waiting_for_human: 'Needs attention',
-    human_handling: 'Human handling',
-    resolved: 'Resolved',
-} as const;
-
 export function ChatHeader({
                                conversation,
                            }: ChatHeaderProps) {
+    const t = useTranslations('inbox');
     const ChannelIcon = channelIcons[conversation.channel.type];
 
     return (
@@ -67,7 +61,7 @@ export function ChatHeader({
             </span>
 
                         <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                            {statusLabels[conversation.status]}
+                            {t(conversation.status)}
                         </Badge>
                     </div>
                 </div>

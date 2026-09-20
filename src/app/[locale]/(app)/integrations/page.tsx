@@ -64,7 +64,7 @@ export default function IntegrationsPage() {
                 setIntegrations((prev) =>
                     prev.map((item) =>
                         item.id === selectedIntegration.id
-                            ? { ...item, connected: true, lastSyncAt: 'Только что' }
+                            ? { ...item, connected: true, lastSyncAt: tCommon('justNow') }
                             : item
                     )
                 );
@@ -108,15 +108,15 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                         <p className="text-sm font-semibold">
-                            Universal Adapter Pattern & CloudEvents Standard
+                            {t('adapterPatternBannerTitle')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Все входящие сообщения автоматически нормализуются в единый формат и обрабатываются через асинхронную шину событий.
+                            {t('adapterPatternBannerDesc')}
                         </p>
                     </div>
                 </div>
                 <Badge variant="outline" className="bg-background text-xs font-mono self-start sm:self-center">
-                    Adapter Registry: 6 Active
+                    Adapter Registry: {integrations.length} Active
                 </Badge>
             </div>
 
@@ -124,7 +124,7 @@ export default function IntegrationsPage() {
             <Tabs defaultValue="all" className="space-y-6">
                 <TabsList className="bg-muted/60">
                     <TabsTrigger value="all" className="text-xs sm:text-sm">
-                        Все адаптеры ({integrations.length})
+                        {t('allAdapters', { count: integrations.length })}
                     </TabsTrigger>
                     <TabsTrigger value="messengers" className="text-xs sm:text-sm">
                         {t('messengersTab')}
@@ -172,11 +172,11 @@ export default function IntegrationsPage() {
                                     <CardContent className="space-y-2 text-xs text-muted-foreground">
                                         <p>{item.description}</p>
                                         <div className="flex justify-between pt-2 border-t text-[11px]">
-                                            <span>Синхронизация:</span>
+                                            <span>{t('lastSync')}</span>
                                             <span className="font-medium text-foreground">{item.lastSyncAt}</span>
                                         </div>
                                         <div className="flex justify-between text-[11px]">
-                                            <span>Обработано событий:</span>
+                                            <span>{t('eventsProcessed')}</span>
                                             <span className="font-mono font-semibold text-foreground">{item.eventsCount.toLocaleString()}</span>
                                         </div>
                                     </CardContent>
@@ -251,7 +251,7 @@ export default function IntegrationsPage() {
                                                 <div>
                                                     <CardTitle className="text-base">{item.name}</CardTitle>
                                                     <span className="text-[11px] text-muted-foreground">
-                                                        {item.connected ? '✓ Подключено' : 'Не подключено'}
+                                                        {item.connected ? `✓ ${tCommon('connected')}` : tCommon('disconnected')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -284,7 +284,7 @@ export default function IntegrationsPage() {
                                 <span>{t('eventLogsTitle')}</span>
                             </CardTitle>
                             <CardDescription className="text-xs">
-                                Полный журнал поступающих и отправляемых событий в стандарте CNCF CloudEvents JSON
+                                {t('cloudEventsDesc')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -311,10 +311,10 @@ export default function IntegrationsPage() {
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <span>Настройка: {selectedIntegration?.name}</span>
+                            <span>{t('configureModalTitle')}: {selectedIntegration?.name}</span>
                         </DialogTitle>
                         <DialogDescription>
-                            Адаптер для подключения канала к AI-движку ReplyLocal
+                            {t('adapterModalDesc')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -342,7 +342,7 @@ export default function IntegrationsPage() {
                             <div className="space-y-0.5">
                                 <Label className="text-xs font-semibold">{t('autoReplyToggle')}</Label>
                                 <p className="text-[11px] text-muted-foreground">
-                                    AI будет автоматически отвечать на входящие запросы
+                                    {t('autoReplyToggleDesc')}
                                 </p>
                             </div>
                             <Switch
@@ -361,7 +361,7 @@ export default function IntegrationsPage() {
                             {isTesting ? (
                                 <>
                                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                                    <span>Проверка связи с API...</span>
+                                    <span>{t('testingConnection')}</span>
                                 </>
                             ) : (
                                 <>

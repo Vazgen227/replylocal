@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
     Bot,
     Check,
@@ -38,6 +39,9 @@ export function AISuggestion({
                                  onHandoff,
                                  onDraftChange,
                              }: AISuggestionProps) {
+    const t = useTranslations('inbox');
+    const tCommon = useTranslations('common');
+
     if (ai.status === 'disabled') {
         return null;
     }
@@ -50,9 +54,9 @@ export function AISuggestion({
                 </div>
 
                 <div>
-                    <p className="text-sm font-semibold">AI Assistant</p>
+                    <p className="text-sm font-semibold">{t('assistantTitle')}</p>
                     <p className="text-xs text-muted-foreground">
-                        Suggested response
+                        {t('suggestedResponse')}
                     </p>
                 </div>
             </div>
@@ -65,12 +69,12 @@ export function AISuggestion({
                                 variant="outline"
                                 className="bg-background text-[10px]"
                             >
-                                AI suggestion
+                                {t('aiSuggestion')}
                             </Badge>
 
                             {ai.status === 'ready' && (
                                 <span className="text-[11px] text-emerald-600">
-                  Ready
+                  {t('ready')}
                 </span>
                             )}
                         </div>
@@ -87,7 +91,7 @@ export function AISuggestion({
                             ) : (
                                 <p className="text-sm leading-6 text-foreground">
                                     {ai.suggestedReply ??
-                                        'No suggestion available.'}
+                                        t('noSuggestion')}
                                 </p>
                             )}
                         </div>
@@ -100,7 +104,7 @@ export function AISuggestion({
                                     onClick={onEdit}
                                 >
                                     <Pencil className="mr-2 h-3.5 w-3.5" />
-                                    Edit
+                                    {tCommon('edit')}
                                 </Button>
                             )}
 
@@ -109,7 +113,7 @@ export function AISuggestion({
                                 onClick={onSend}
                             >
                                 <Check className="mr-2 h-3.5 w-3.5" />
-                                Send
+                                {t('send')}
                             </Button>
 
                             <Button
@@ -118,7 +122,7 @@ export function AISuggestion({
                                 onClick={onRegenerate}
                             >
                                 <RefreshCw className="mr-2 h-3.5 w-3.5" />
-                                Regenerate
+                                {t('regenerate')}
                             </Button>
                         </div>
                     </div>
@@ -126,7 +130,7 @@ export function AISuggestion({
                     {ai.sources.length > 0 && (
                         <div className="mt-5">
                             <p className="text-xs font-semibold text-muted-foreground">
-                                Based on
+                                {t('basedOn')}
                             </p>
 
                             <div className="mt-3 space-y-2">
@@ -150,12 +154,11 @@ export function AISuggestion({
 
                     <div>
                         <p className="text-xs font-semibold text-muted-foreground">
-                            Human handoff
+                            {t('handoff')}
                         </p>
 
                         <p className="mt-2 text-sm leading-5 text-muted-foreground">
-                            Stop AI handling and assign this conversation to a
-                            human.
+                            {t('handoffDesc')}
                         </p>
 
                         <Button
@@ -164,7 +167,7 @@ export function AISuggestion({
                             onClick={onHandoff}
                         >
                             <UserRound className="mr-2 h-4 w-4" />
-                            Hand off to human
+                            {t('handOffToHuman')}
                         </Button>
                     </div>
                 </div>

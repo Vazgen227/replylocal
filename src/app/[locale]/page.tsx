@@ -35,6 +35,8 @@ import {
 export default function LandingPage() {
     const locale = useLocale();
     const t = useTranslations('landing');
+    const tNav = useTranslations('nav');
+    const tCommon = useTranslations('common');
 
     // Calculator State
     const [inquiries, setInquiries] = useState<number>(450);
@@ -48,11 +50,11 @@ export default function LandingPage() {
 
     // Fake Door Modal State
     const [isBetaModalOpen, setIsBetaModalOpen] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState<string>('Профи ($49)');
+    const [selectedPlan, setSelectedPlan] = useState<string>('Профі ($49)');
     const [leadName, setLeadName] = useState('');
     const [leadEmail, setLeadEmail] = useState('');
     const [leadPhone, setLeadPhone] = useState('');
-    const [leadBizType, setLeadBizType] = useState('СТО / Автосервис');
+    const [leadBizType, setLeadBizType] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     function handleOpenBetaModal(planName: string) {
@@ -80,16 +82,16 @@ export default function LandingPage() {
 
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
                         <a href="#features" className="hover:text-foreground transition-colors">
-                            Возможности
+                            {tNav('features')}
                         </a>
                         <a href="#calculator" className="hover:text-foreground transition-colors">
-                            Калькулятор выгоды
+                            {tNav('calculator')}
                         </a>
                         <a href="#audiences" className="hover:text-foreground transition-colors">
-                            Ниши
+                            {tNav('audiences')}
                         </a>
                         <a href="#pricing" className="hover:text-foreground transition-colors">
-                            Тарифы
+                            {tNav('pricing')}
                         </a>
                     </nav>
 
@@ -124,11 +126,11 @@ export default function LandingPage() {
 
                         <Link href={`/${locale}/dashboard`}>
                             <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                                Демо дашборда
+                                {tNav('demoDashboard')}
                             </Button>
                         </Link>
 
-                        <Button size="sm" onClick={() => handleOpenBetaModal('Старт')}>
+                        <Button size="sm" onClick={() => handleOpenBetaModal(t('planStart'))}>
                             {t('ctaPrimary')}
                         </Button>
                     </div>
@@ -156,7 +158,7 @@ export default function LandingPage() {
                             <Button
                                 size="lg"
                                 className="h-12 px-8 text-base shadow-md gap-2"
-                                onClick={() => handleOpenBetaModal('Профи')}
+                                onClick={() => handleOpenBetaModal(t('planPro'))}
                             >
                                 <span>{t('ctaPrimary')}</span>
                                 <ArrowRight className="h-4 w-4" />
@@ -187,7 +189,7 @@ export default function LandingPage() {
                                     </span>
                                 </div>
                                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                                    Online • 24/7 Auto-Pilot
+                                    {t('demoOnlineBadge')}
                                 </Badge>
                             </div>
 
@@ -196,12 +198,12 @@ export default function LandingPage() {
                                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                                         <span className="font-semibold text-foreground flex items-center gap-1.5">
                                             <Send className="h-3.5 w-3.5 text-sky-500" />
-                                            Клиент (Telegram)
+                                            {t('demoCustomerLabel')}
                                         </span>
-                                        <span>15:21 (1 сек назад)</span>
+                                        <span>{t('demoCustomerTime')}</span>
                                     </div>
                                     <p className="text-sm font-medium">
-                                        «Добрый день! Сколько стоит диагностика BMW F30 и можно ли записаться на сегодня после 18:00?»
+                                        {t('demoCustomerMsg')}
                                     </p>
                                 </div>
 
@@ -209,21 +211,21 @@ export default function LandingPage() {
                                     <div className="flex items-center justify-between text-xs text-primary mb-2">
                                         <span className="font-semibold flex items-center gap-1.5">
                                             <Bot className="h-3.5 w-3.5" />
-                                            ReplyLocal AI (Автоответ)
+                                            {t('demoAiLabel')}
                                         </span>
                                         <Badge className="bg-violet-100 text-violet-700 border-violet-200 text-[10px] h-4">
-                                            94% уверенность
+                                            {t('demoAiConfidence')}
                                         </Badge>
                                     </div>
                                     <p className="text-sm leading-relaxed text-foreground">
-                                        «Добрый день! Компьютерная диагностика стоит <strong>500 ₴</strong> (45 минут). На сегодня есть свободные окна на <strong>18:30</strong> и <strong>19:15</strong>. Какое время забронировать за вами?»
+                                        {t('demoAiMsg')}
                                     </p>
                                     <div className="mt-2.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                                        <span className="text-emerald-600 font-medium">✓ Прайс-лист</span>
+                                        <span className="text-emerald-600 font-medium">{t('demoPriceList')}</span>
                                         <span>•</span>
-                                        <span className="text-emerald-600 font-medium">✓ График мастера</span>
+                                        <span className="text-emerald-600 font-medium">{t('demoMasterSchedule')}</span>
                                         <span>•</span>
-                                        <span>Цель: Запись</span>
+                                        <span>{t('demoTarget')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -237,10 +239,10 @@ export default function LandingPage() {
                 <div className="container mx-auto max-w-6xl px-4 sm:px-6">
                     <div className="text-center max-w-3xl mx-auto mb-12">
                         <h2 className="text-3xl font-bold tracking-tight">
-                            Кому ReplyLocal приносит максимальную прибыль?
+                            {t('audiencesTitle')}
                         </h2>
                         <p className="mt-3 text-muted-foreground">
-                            Специализированные адаптеры и модели под специфику каждой отрасли
+                            {t('audiencesSubtitle')}
                         </p>
                     </div>
 
@@ -250,15 +252,15 @@ export default function LandingPage() {
                                 <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center mb-3">
                                     <Store className="h-5 w-5" />
                                 </div>
-                                <CardTitle className="text-lg">Локальный бизнес</CardTitle>
-                                <CardDescription>СТО, автосервисы, клиники, салоны красоты, ремонт</CardDescription>
+                                <CardTitle className="text-lg">{t('audLocalTitle')}</CardTitle>
+                                <CardDescription>{t('audLocalDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-2 text-sm text-muted-foreground">
-                                <p><strong>Боль:</strong> 35% клиентов уходят к конкурентам при задержке ответа от администратора больше 10 минут.</p>
-                                <p><strong>Решение:</strong> AI мгновенно выявляет потребность, консультирует по прайсу и закрывает на запись.</p>
+                                <p>{t('audLocalPain')}</p>
+                                <p>{t('audLocalSolution')}</p>
                             </CardContent>
                             <CardFooter>
-                                <Badge variant="secondary" className="text-xs">Каналы: WhatsApp, Telegram, IG</Badge>
+                                <Badge variant="secondary" className="text-xs">{t('audLocalChannels')}</Badge>
                             </CardFooter>
                         </Card>
 
@@ -267,15 +269,15 @@ export default function LandingPage() {
                                 <div className="h-10 w-10 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center mb-3">
                                     <ShoppingBag className="h-5 w-5" />
                                 </div>
-                                <CardTitle className="text-lg">Селлеры маркетплейсов</CardTitle>
-                                <CardDescription>Ozon, Wildberries, Amazon, Shopify</CardDescription>
+                                <CardTitle className="text-lg">{t('audMarketplacesTitle')}</CardTitle>
+                                <CardDescription>{t('audMarketplacesDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-2 text-sm text-muted-foreground">
-                                <p><strong>Боль:</strong> Низкий рейтинг карточки из-за неотвеченных вопросов и негативных отзывов.</p>
-                                <p><strong>Решение:</strong> AI отвечает по Паспорту товара, нейтрализует негатив и повышает позиции в выдаче.</p>
+                                <p>{t('audMarketplacesPain')}</p>
+                                <p>{t('audMarketplacesSolution')}</p>
                             </CardContent>
                             <CardFooter>
-                                <Badge variant="secondary" className="text-xs">Каналы: Ozon API, WB, Amazon</Badge>
+                                <Badge variant="secondary" className="text-xs">{t('audMarketplacesChannels')}</Badge>
                             </CardFooter>
                         </Card>
 
@@ -284,15 +286,15 @@ export default function LandingPage() {
                                 <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-3">
                                     <Users className="h-5 w-5" />
                                 </div>
-                                <CardTitle className="text-lg">Агентства и маркетологи</CardTitle>
-                                <CardDescription>Performance-агентства, таргетологи, BaaS</CardDescription>
+                                <CardTitle className="text-lg">{t('audAgenciesTitle')}</CardTitle>
+                                <CardDescription>{t('audAgenciesDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-2 text-sm text-muted-foreground">
-                                <p><strong>Боль:</strong> Трафик из рекламы сливается из-за неквалифицированных менеджеров на стороне клиента.</p>
-                                <p><strong>Решение:</strong> Допродажа сервиса автоответов как готового white-label решения клиентам агентства.</p>
+                                <p>{t('audAgenciesPain')}</p>
+                                <p>{t('audAgenciesSolution')}</p>
                             </CardContent>
                             <CardFooter>
-                                <Badge variant="secondary" className="text-xs">Multi-Tenant & White-Label</Badge>
+                                <Badge variant="secondary" className="text-xs">{t('audAgenciesChannels')}</Badge>
                             </CardFooter>
                         </Card>
                     </div>
@@ -318,7 +320,7 @@ export default function LandingPage() {
                                 <div>
                                     <div className="flex justify-between text-sm font-semibold mb-2">
                                         <Label>{t('calcInquiriesLabel')}</Label>
-                                        <span className="text-primary font-mono">{inquiries} обращений</span>
+                                        <span className="text-primary font-mono">{t('calcInquiriesCount', { count: inquiries })}</span>
                                     </div>
                                     <input
                                         type="range"
@@ -334,7 +336,7 @@ export default function LandingPage() {
                                 <div>
                                     <div className="flex justify-between text-sm font-semibold mb-2">
                                         <Label>{t('calcAvgCheckLabel')}</Label>
-                                        <span className="text-primary font-mono">{avgCheck.toLocaleString()} ₴</span>
+                                        <span className="text-primary font-mono">{avgCheck.toLocaleString()} {tCommon('currency')}</span>
                                     </div>
                                     <input
                                         type="range"
@@ -364,7 +366,7 @@ export default function LandingPage() {
                                 </div>
 
                                 <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3.5 text-xs text-amber-800 dark:text-amber-300">
-                                    💡 <strong>Рыночный факт:</strong> 95% сообщений в WhatsApp и 85% в Telegram открываются в первые 5 минут. Мгновенный AI-ответ устраняет эффект «подумаю и уйду к другим».
+                                    {t('calcFact')}
                                 </div>
                             </div>
 
@@ -374,17 +376,17 @@ export default function LandingPage() {
                                         {t('calcRecoveredLabel')}
                                     </p>
                                     <p className="text-3xl sm:text-4xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 font-mono">
-                                        +{estimatedMonthlyRecovered.toLocaleString()} ₴
-                                        <span className="text-xs font-normal text-muted-foreground"> / мес</span>
+                                        +{estimatedMonthlyRecovered.toLocaleString()} {tCommon('currency')}
+                                        <span className="text-xs font-normal text-muted-foreground">{t('calcMonthSuffix')}</span>
                                     </p>
 
                                     <div className="mt-6 space-y-3 text-sm">
                                         <div className="flex justify-between py-1.5 border-b">
-                                            <span className="text-muted-foreground">Удержанных лидов:</span>
-                                            <span className="font-semibold text-foreground">~{estimatedLostLeads} клиентов / мес</span>
+                                            <span className="text-muted-foreground">{t('calcRetainedLeadsLabel')}</span>
+                                            <span className="font-semibold text-foreground">{t('calcRetainedLeadsValue', { count: estimatedLostLeads })}</span>
                                         </div>
                                         <div className="flex justify-between py-1.5 border-b">
-                                            <span className="text-muted-foreground">Окупаемость тарифа «Профи» ($49):</span>
+                                            <span className="text-muted-foreground">{t('calcRoiProLabel')}</span>
                                             <span className="font-bold text-primary font-mono">{roiMultiplier}x ROI</span>
                                         </div>
                                     </div>
@@ -392,9 +394,9 @@ export default function LandingPage() {
 
                                 <Button
                                     className="mt-8 w-full h-11"
-                                    onClick={() => handleOpenBetaModal('Профи ($49)')}
+                                    onClick={() => handleOpenBetaModal(t('planPro'))}
                                 >
-                                    Начать возвращать лиды со скидкой 50%
+                                    {t('calcCtaButton')}
                                 </Button>
                             </div>
                         </div>
@@ -497,7 +499,7 @@ export default function LandingPage() {
                                     className="w-full"
                                     onClick={() => handleOpenBetaModal(t('planStart'))}
                                 >
-                                    Выбрать «Старт»
+                                    {t('selectPlanStart')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -542,7 +544,7 @@ export default function LandingPage() {
                                     className="w-full shadow-md"
                                     onClick={() => handleOpenBetaModal(t('planPro'))}
                                 >
-                                    Выбрать «Профи» (-50%)
+                                    {t('selectPlanPro')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -581,7 +583,7 @@ export default function LandingPage() {
                                     className="w-full"
                                     onClick={() => handleOpenBetaModal(t('planEnterprise'))}
                                 >
-                                    Связаться с нами
+                                    {t('selectPlanEnterprise')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -597,18 +599,18 @@ export default function LandingPage() {
                             RL
                         </div>
                         <span className="font-semibold text-foreground">ReplyLocal</span>
-                        <span>© 2026. Архитектура масштабируемого AI SaaS.</span>
+                        <span>{t('footerCopy')}</span>
                     </div>
 
                     <div className="flex items-center gap-6">
                         <Link href={`/${locale}/dashboard`} className="hover:underline">
-                            Дашборд
+                            {tNav('dashboard')}
                         </Link>
                         <Link href={`/${locale}/inbox`} className="hover:underline">
-                            AI Inbox
+                            {tNav('inbox')}
                         </Link>
                         <Link href={`/${locale}/integrations`} className="hover:underline">
-                            Интеграции
+                            {tNav('integrations')}
                         </Link>
                     </div>
                 </div>
@@ -625,7 +627,7 @@ export default function LandingPage() {
                     {!isSubmitted ? (
                         <form onSubmit={handleBetaSubmit} className="space-y-4 pt-2">
                             <div className="rounded-lg bg-primary/10 p-3 text-xs font-medium text-primary">
-                                Выбранный тариф: <strong>{selectedPlan}</strong> • Промокод <strong>BETA50</strong> применен
+                                {t('selectedPlanBadge', { plan: selectedPlan })}
                             </div>
 
                             <div className="space-y-1.5">
@@ -633,7 +635,7 @@ export default function LandingPage() {
                                 <Input
                                     id="leadName"
                                     required
-                                    placeholder="Алексей"
+                                    placeholder={t('modalNamePlaceholder')}
                                     value={leadName}
                                     onChange={(e) => setLeadName(e.target.value)}
                                 />
@@ -656,7 +658,7 @@ export default function LandingPage() {
                                 <Input
                                     id="leadPhone"
                                     required
-                                    placeholder="+380... или @telegram"
+                                    placeholder="+380... / @username"
                                     value={leadPhone}
                                     onChange={(e) => setLeadPhone(e.target.value)}
                                 />
@@ -666,7 +668,7 @@ export default function LandingPage() {
                                 <Label htmlFor="leadBizType">{t('formBusinessType')}</Label>
                                 <Input
                                     id="leadBizType"
-                                    placeholder="СТО / Салон / Селлер Ozon / Клиника"
+                                    placeholder={t('modalBizPlaceholder')}
                                     value={leadBizType}
                                     onChange={(e) => setLeadBizType(e.target.value)}
                                 />
@@ -690,7 +692,7 @@ export default function LandingPage() {
                                 variant="outline"
                                 onClick={() => setIsBetaModalOpen(false)}
                             >
-                                Закрыть
+                                {tCommon('close')}
                             </Button>
                         </div>
                     )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Conversation, ConversationFilter } from '@/types/inbox';
 import { ConversationList } from './conversation-list';
 import { ChatHeader } from './chat-header';
@@ -19,6 +20,9 @@ export function InboxShell({
     conversations: initialConversations,
     initialSelectedId,
 }: InboxShellProps) {
+    const t = useTranslations('inbox');
+    const tCommon = useTranslations('common');
+
     const [conversations, setConversations] =
         useState<Conversation[]>(initialConversations);
 
@@ -117,7 +121,7 @@ export function InboxShell({
                     unreadCount: 0,
                     status: 'human_handling' as const,
                     lastMessage: finalMessage,
-                    lastMessageAt: 'Только что',
+                    lastMessageAt: tCommon('justNow'),
                     messages: [
                         ...conv.messages,
                         {
@@ -125,7 +129,7 @@ export function InboxShell({
                             conversationId: conv.id,
                             sender: {
                                 type: 'agent' as const,
-                                name: 'Вы (Оператор)',
+                                name: t('youOperator'),
                             },
                             content: finalMessage,
                             timestamp: timeStr,
@@ -146,7 +150,7 @@ export function InboxShell({
         setDraftMessage('');
         setDraftReply('');
         setIsEditing(false);
-        toast.success('Сообщение успешно отправлено клиенту');
+        toast.success(t('messageSentSuccess'));
     }
 
     function handleSendAISuggestion() {
@@ -166,7 +170,7 @@ export function InboxShell({
                     unreadCount: 0,
                     status: 'resolved' as const,
                     lastMessage: aiText,
-                    lastMessageAt: 'Только что',
+                    lastMessageAt: tCommon('justNow'),
                     messages: [
                         ...conv.messages,
                         {
@@ -194,7 +198,7 @@ export function InboxShell({
         setConversations(updatedConversations);
         setDraftReply('');
         setIsEditing(false);
-        toast.success('AI-ответ отправлен клиенту!');
+        toast.success(t('aiReplySentSuccess'));
     }
 
     function handleRegenerate() {
@@ -232,7 +236,7 @@ export function InboxShell({
             );
         }
 
-        toast.info(`Регенерация ответа: стиль «${nextTone}»`);
+        toast.info(t('regeneratingTone', { tone: nextTone }));
     }
 
     function handleHandoff() {
@@ -251,10 +255,10 @@ export function InboxShell({
                             conversationId: conv.id,
                             sender: {
                                 type: 'system' as const,
-                                name: 'Система',
+                                name: tCommon('system'),
                             },
-                            content: '⚠️ AI передал управление оператору. Ожидается ответ менеджера.',
-                            timestamp: 'Только что',
+                            content: t('systemHandoffMessage'),
+                            timestamp: tCommon('justNow'),
                         },
                     ],
                 };
@@ -263,7 +267,7 @@ export function InboxShell({
         });
 
         setConversations(updatedConversations);
-        toast.warning('Диалог переведен в режим «Требует внимания человека»');
+        toast.warning(t('handoffWarningToast'));
     }
 
     const filteredConversations = conversations.filter((conv) => {
@@ -282,7 +286,7 @@ export function InboxShell({
         return (
             <div className="flex h-full items-center justify-center">
                 <p className="text-sm text-muted-foreground">
-                    Нет доступных диалогов.
+                    {t('noConversationsAvailable')}
                 </p>
             </div>
         );

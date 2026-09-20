@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Paperclip, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +17,8 @@ export function MessageComposer({
     onChange,
     onSend,
 }: MessageComposerProps) {
+    const t = useTranslations('inbox');
+
     function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
@@ -24,7 +27,7 @@ export function MessageComposer({
     }
 
     function handleAttach() {
-        toast.info('Прикрепление файлов (счета, фото работ, PDF прайсы) готово');
+        toast.info(t('attachReady'));
     }
 
     return (
@@ -34,7 +37,7 @@ export function MessageComposer({
                     value={value}
                     onChange={(event) => onChange?.(event.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Напишите ответ клиенту (нажмите Ctrl+Enter для быстрой отправки)..."
+                    placeholder={t('typeMessage')}
                     className="min-h-[80px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 text-sm leading-relaxed"
                 />
 
@@ -46,12 +49,12 @@ export function MessageComposer({
                             className="h-8 w-8 text-muted-foreground hover:text-foreground"
                             onClick={handleAttach}
                             type="button"
-                            title="Прикрепить файл"
+                            title={t('attachFile')}
                         >
                             <Paperclip className="h-4 w-4" />
                         </Button>
                         <span className="text-[11px] text-muted-foreground hidden sm:inline">
-                            Ctrl + Enter для отправки
+                            {t('ctrlEnterToSend')}
                         </span>
                     </div>
 
@@ -61,7 +64,7 @@ export function MessageComposer({
                         disabled={!value.trim()}
                         className="gap-1.5 shadow-xs"
                     >
-                        <span>Отправить</span>
+                        <span>{t('send')}</span>
                         <Send className="h-3.5 w-3.5" />
                     </Button>
                 </div>

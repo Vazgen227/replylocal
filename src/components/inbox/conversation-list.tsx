@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,8 @@ export function ConversationList({
                                      activeFilter,
                                      onFilterChange,
                                  }: ConversationListProps) {
+    const t = useTranslations('inbox');
+
     return (
         <section className="flex h-full w-[340px] shrink-0 flex-col border-r bg-background">
 
@@ -42,11 +45,11 @@ export function ConversationList({
             <div className="flex h-16 items-center justify-between border-b px-4">
                 <div>
                     <h2 className="text-sm font-semibold">
-                        Conversations
+                        {t('conversations')}
                     </h2>
 
                     <p className="text-xs text-muted-foreground">
-                        {conversations.length} conversations
+                        {t('conversationsCount', { count: conversations.length })}
                     </p>
                 </div>
             </div>
@@ -62,7 +65,7 @@ export function ConversationList({
                         onChange={(event) =>
                             onSearchChange?.(event.target.value)
                         }
-                        placeholder="Search conversations..."
+                        placeholder={t('search')}
                         className="h-9 bg-muted/40 pl-9"
                     />
                 </div>
@@ -84,7 +87,7 @@ export function ConversationList({
                             onFilterChange('all')
                         }
                     >
-                        All
+                        {t('all')}
                     </Button>
 
                     <Button
@@ -99,7 +102,7 @@ export function ConversationList({
                             onFilterChange('new')
                         }
                     >
-                        New
+                        {t('new')}
                     </Button>
 
                     <Button
@@ -116,7 +119,7 @@ export function ConversationList({
                             )
                         }
                     >
-                        Needs attention
+                        {t('waiting_for_human')}
                     </Button>
 
                     <Button
@@ -131,7 +134,7 @@ export function ConversationList({
                             onFilterChange('resolved')
                         }
                     >
-                        Resolved
+                        {t('resolved')}
                     </Button>
                 </div>
             </div>
@@ -159,11 +162,11 @@ export function ConversationList({
                     {conversations.length === 0 && (
                         <div className="px-4 py-10 text-center">
                             <p className="text-sm font-medium">
-                                No conversations
+                                {t('noConversations')}
                             </p>
 
                             <p className="mt-1 text-xs text-muted-foreground">
-                                Try changing your search or filter.
+                                {t('tryChangingFilter')}
                             </p>
                         </div>
                     )}

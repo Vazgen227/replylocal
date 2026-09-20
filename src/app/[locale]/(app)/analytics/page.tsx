@@ -18,14 +18,14 @@ export default function AnalyticsPage() {
     const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
 
     function handleExportCSV() {
-        toast.success('Отчет за выбранный период успешно сформирован и скачан (CSV)');
+        toast.success(t('exportSuccess'));
     }
 
     const funnelStages = [
-        { name: '1. Входящий запрос (Inquiry)', count: 1482, percent: 100, color: 'bg-blue-500' },
-        { name: '2. Квалифицирован AI (Qualified)', count: 1245, percent: 84, color: 'bg-violet-500' },
-        { name: '3. Предложен слот / оффер (Offer)', count: 890, percent: 60, color: 'bg-amber-500' },
-        { name: '4. Успешная запись / покупка (Booked)', count: 342, percent: 23, color: 'bg-emerald-500' },
+        { name: t('inquiryLabel'), count: 1482, percent: 100, color: 'bg-blue-500' },
+        { name: t('qualifiedLabel'), count: 1245, percent: 84, color: 'bg-violet-500' },
+        { name: t('offerLabel'), count: 890, percent: 60, color: 'bg-amber-500' },
+        { name: t('bookedLabel'), count: 342, percent: 23, color: 'bg-emerald-500' },
     ];
 
     const hourlyActivity = [
@@ -40,12 +40,12 @@ export default function AnalyticsPage() {
     ];
 
     const topTopics = [
-        { topic: 'Стоимость и запись на диагностику', count: 420, share: '28%' },
-        { topic: 'Замена масла и фильтров', count: 290, share: '19%' },
-        { topic: 'Совместимость запчастей (Ozon/WB)', count: 240, share: '16%' },
-        { topic: 'Прием авто без записи', count: 180, share: '12%' },
-        { topic: 'График работы и адрес', count: 150, share: '10%' },
-        { topic: 'Прочие нестандартные вопросы', count: 202, share: '15%' },
+        { topic: t('topic1'), count: 420, share: '28%' },
+        { topic: t('topic2'), count: 290, share: '19%' },
+        { topic: t('topic3'), count: 240, share: '16%' },
+        { topic: t('topic4'), count: 180, share: '12%' },
+        { topic: t('topic5'), count: 150, share: '10%' },
+        { topic: t('topic6'), count: 202, share: '15%' },
     ];
 
     return (
@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
                                 timeRange === '7d' ? 'bg-background font-semibold shadow-xs' : 'text-muted-foreground'
                             }`}
                         >
-                            7 дней
+                            {t('range7d')}
                         </button>
                         <button
                             onClick={() => setTimeRange('30d')}
@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
                                 timeRange === '30d' ? 'bg-background font-semibold shadow-xs' : 'text-muted-foreground'
                             }`}
                         >
-                            30 дней
+                            {t('range30d')}
                         </button>
                         <button
                             onClick={() => setTimeRange('90d')}
@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
                                 timeRange === '90d' ? 'bg-background font-semibold shadow-xs' : 'text-muted-foreground'
                             }`}
                         >
-                            Квартал
+                            {t('range90d')}
                         </button>
                     </div>
 
@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
                     <CardContent className="space-y-1">
                         <div className="text-3xl font-extrabold text-emerald-600 font-mono">4.2 сек</div>
                         <p className="text-xs text-muted-foreground">
-                            Клиент получает персонализированный ответ по прайсу пока он находится в диалоге
+                            {t('aiSpeedDesc')}
                         </p>
                     </CardContent>
                 </Card>
@@ -124,14 +124,14 @@ export default function AnalyticsPage() {
                                 {t('humanSpeed')}
                             </CardTitle>
                             <Badge variant="outline" className="text-xs">
-                                Индустриальный бенчмарк
+                                {t('industryBenchmark')}
                             </Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-1">
                         <div className="text-3xl font-extrabold text-muted-foreground font-mono">18.5 мин</div>
                         <p className="text-xs text-muted-foreground">
-                            Задержка ответа человека ведет к потере 35% горячих лидов
+                            {t('humanSpeedDesc')}
                         </p>
                     </CardContent>
                 </Card>
@@ -147,7 +147,7 @@ export default function AnalyticsPage() {
                             <span>{t('funnelTitle')}</span>
                         </CardTitle>
                         <CardDescription className="text-xs">
-                            Конверсия лидов от первого вопроса до подтвержденной записи / оплаты
+                            {t('funnelSubtitle')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
@@ -176,7 +176,7 @@ export default function AnalyticsPage() {
                     <CardHeader className="pb-3 border-b">
                         <CardTitle className="text-base">{t('topicBreakdown')}</CardTitle>
                         <CardDescription className="text-xs">
-                            О чем чаще всего спрашивают клиенты
+                            {t('topicBreakdownSubtitle')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-4 divide-y">
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                         ))}
                     </CardContent>
                     <div className="p-3 border-t text-center text-xs text-muted-foreground bg-muted/10">
-                        Автоматически кластеризовано AI
+                        {t('clusteredByAi')}
                     </div>
                 </Card>
             </div>
@@ -205,10 +205,10 @@ export default function AnalyticsPage() {
                 <CardHeader className="pb-3 border-b">
                     <CardTitle className="text-base flex items-center gap-2">
                         <BarChart3 className="h-4 w-4 text-primary" />
-                        <span>Пиковые часы активности клиентов</span>
+                        <span>{t('hourlyActivityTitle')}</span>
                     </CardTitle>
                     <CardDescription className="text-xs">
-                        Количество входящих обращений в течение суток
+                        {t('hourlyActivityDesc')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
