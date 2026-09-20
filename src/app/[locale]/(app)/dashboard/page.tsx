@@ -242,7 +242,7 @@ export default function DashboardOverviewPage() {
                             <div className="flex justify-between text-xs font-medium">
                                 <span className="flex items-center gap-1.5">
                                     <ShoppingBag className="h-3.5 w-3.5 text-blue-600" />
-                                    Ozon & WB Seller API
+                                    Rozetka & Prom API
                                 </span>
                                 <span className="font-mono">8% (120)</span>
                             </div>

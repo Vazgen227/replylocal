@@ -1,15 +1,15 @@
 /**
  * Universal Adapter Pattern & CloudEvents Specifications for ReplyLocal
  * Allows seamless extension across Messengers (Telegram, WhatsApp, IG)
- * and Marketplaces (Ozon, Wildberries, Amazon, Shopify).
+ * and Marketplaces (Rozetka, Prom, Amazon, Shopify).
  */
 
 export type ChannelId =
     | 'telegram'
     | 'whatsapp'
     | 'instagram'
-    | 'ozon'
-    | 'wildberries'
+    | 'rozetka'
+    | 'prom'
     | 'amazon'
     | 'shopify'
     | 'webhook';
@@ -19,7 +19,7 @@ export type ChannelCategory = 'messenger' | 'marketplace' | 'webhook';
 export interface CloudEvent<T = Record<string, unknown>> {
     specversion: '1.0';
     id: string;
-    source: string; // e.g. "replylocal/adapter/telegram", "replylocal/adapter/ozon"
+    source: string; // e.g. "replylocal/adapter/telegram", "replylocal/adapter/rozetka"
     type:
         | 'com.replylocal.inquiry.created'
         | 'com.replylocal.message.sent'
@@ -88,7 +88,7 @@ export interface IChannelAdapter {
 }
 
 /**
- * Universal Interface for Marketplace & E-commerce Channels (Ozon, WB, Amazon)
+ * Universal Interface for Marketplace & E-commerce Channels (Rozetka, Prom, Amazon)
  */
 export interface IMarketplaceAdapter extends IChannelAdapter {
     getProductDetails(productId: string): Promise<ProductDetails | null>;

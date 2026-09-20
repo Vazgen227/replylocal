@@ -12,7 +12,7 @@ export interface ServiceItem {
 export interface ProductPassport {
     id: string;
     sku: string;
-    marketplace: 'Ozon' | 'Wildberries' | 'Amazon' | 'Shopify';
+    marketplace: 'Rozetka' | 'Prom' | 'Amazon' | 'Shopify';
     title: string;
     price: number;
     currency: string;
@@ -91,44 +91,44 @@ export const mockServices: ServiceItem[] = [
 export const mockPassports: ProductPassport[] = [
     {
         id: 'pass_1',
-        sku: 'OZ-9482-BRK',
-        marketplace: 'Ozon',
-        title: 'Керамические тормозные колодки Performance для BMW 3/4 series',
-        price: 2450,
-        currency: 'RUB',
+        sku: 'RZ-9482-BRK',
+        marketplace: 'Rozetka',
+        title: 'Керамічні гальмівні колодки Performance для BMW 3/4 series',
+        price: 1850,
+        currency: 'UAH',
         specifications: {
-            'Совместимость': 'BMW 3 (F30/F31), BMW 4 (F32/F36) 2012-2019',
-            'Ось установки': 'Передняя',
-            'Материал': 'Керамика без скрипа и пыли',
-            'Гарантия': '12 мес',
+            'Сумісність': 'BMW 3 (F30/F31), BMW 4 (F32/F36) 2012-2019',
+            'Вісь встановлення': 'Передня',
+            'Матеріал': 'Кераміка без скрипу та пилу',
+            'Гарантія': '12 міс',
         },
         commonQuestions: [
             {
-                question: 'Подойдут ли на BMW 320d 2016?',
-                answer: 'Да, эти колодки полностью совместимы со всеми модификациями F30 с базовыми тормозами.',
+                question: 'Чи підійдуть на BMW 320d 2016?',
+                answer: 'Так, ці колодки повністю сумісні з усіма модифікаціями F30 з базовими гальмами.',
             },
             {
-                question: 'Есть ли в комплекте датчик износа?',
-                answer: 'Датчик износа поставляется отдельно, артикул OZ-9482-SNS.',
+                question: 'Чи є в комплекті датчик зносу?',
+                answer: 'Датчик зносу постачається окремо, артикул RZ-9482-SNS.',
             },
         ],
     },
     {
         id: 'pass_2',
-        sku: 'WB-5521-CER',
-        marketplace: 'Wildberries',
-        title: 'Гидрофобное керамическое покрытие 9H для кузова авто 50мл',
-        price: 1890,
-        currency: 'RUB',
+        sku: 'PR-5521-CER',
+        marketplace: 'Prom',
+        title: 'Гідрофобне керамічне покриття 9H для кузова авто 50мл',
+        price: 1290,
+        currency: 'UAH',
         specifications: {
-            'Объем': '50 мл',
-            'Твердость': '9H Real Diamond Ceramic',
-            'Стойкость': 'До 12 месяцев защиты от царапин и грязи',
+            'Обʼєм': '50 мл',
+            'Твердість': '9H Real Diamond Ceramic',
+            'Стійкість': 'До 12 місяців захисту від подряпин та бруду',
         },
         commonQuestions: [
             {
-                question: 'Хватит ли флакона на кроссовер?',
-                answer: 'Да, объема 50 мл достаточно для покрытия кроссовера (например, RAV4 или X5) в 2 полных слоя.',
+                question: 'Чи вистачить флакона на кросовер?',
+                answer: 'Так, обʼєму 50 мл достатньо для покриття кросовера (наприклад, RAV4 або X5) у 2 повні шари.',
             },
         ],
     },

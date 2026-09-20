@@ -59,7 +59,7 @@ export default function KnowledgeBasePage() {
 
     const [newPassportTitle, setNewPassportTitle] = useState('');
     const [newPassportSku, setNewPassportSku] = useState('');
-    const [newPassportMarketplace, setNewPassportMarketplace] = useState<'Ozon' | 'Wildberries' | 'Amazon' | 'Shopify'>('Amazon');
+    const [newPassportMarketplace, setNewPassportMarketplace] = useState<'Rozetka' | 'Prom' | 'Amazon' | 'Shopify'>('Rozetka');
     const [newPassportPrice, setNewPassportPrice] = useState('1490');
 
     const [newRuleTitle, setNewRuleTitle] = useState('');
@@ -546,14 +546,14 @@ export default function KnowledgeBasePage() {
                                     value={newPassportMarketplace}
                                     onChange={(e) =>
                                         setNewPassportMarketplace(
-                                            e.target.value as 'Ozon' | 'Wildberries' | 'Amazon' | 'Shopify'
+                                            e.target.value as 'Rozetka' | 'Prom' | 'Amazon' | 'Shopify'
                                         )
                                     }
                                 >
+                                    <option value="Rozetka">Rozetka</option>
+                                    <option value="Prom">Prom</option>
                                     <option value="Amazon">Amazon</option>
                                     <option value="Shopify">Shopify</option>
-                                    <option value="Ozon">Ozon</option>
-                                    <option value="Wildberries">Wildberries</option>
                                 </select>
                             </div>
                         </div>
