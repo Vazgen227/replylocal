@@ -68,6 +68,21 @@ export default function LandingPage() {
         setIsSubmitted(true);
     }
 
+    function handleScrollTo(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            const headerOffset = 80;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth',
+            });
+            window.history.pushState(null, '', `#${id}`);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20">
             {/* Top Navigation */}
@@ -81,16 +96,32 @@ export default function LandingPage() {
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-                        <a href="#features" className="hover:text-foreground transition-colors">
+                        <a
+                            href="#features"
+                            onClick={(e) => handleScrollTo(e, 'features')}
+                            className="hover:text-foreground transition-colors cursor-pointer"
+                        >
                             {tNav('features')}
                         </a>
-                        <a href="#calculator" className="hover:text-foreground transition-colors">
+                        <a
+                            href="#calculator"
+                            onClick={(e) => handleScrollTo(e, 'calculator')}
+                            className="hover:text-foreground transition-colors cursor-pointer"
+                        >
                             {tNav('calculator')}
                         </a>
-                        <a href="#audiences" className="hover:text-foreground transition-colors">
+                        <a
+                            href="#audiences"
+                            onClick={(e) => handleScrollTo(e, 'audiences')}
+                            className="hover:text-foreground transition-colors cursor-pointer"
+                        >
                             {tNav('audiences')}
                         </a>
-                        <a href="#pricing" className="hover:text-foreground transition-colors">
+                        <a
+                            href="#pricing"
+                            onClick={(e) => handleScrollTo(e, 'pricing')}
+                            className="hover:text-foreground transition-colors cursor-pointer"
+                        >
                             {tNav('pricing')}
                         </a>
                     </nav>
@@ -235,7 +266,7 @@ export default function LandingPage() {
             </section>
 
             {/* Target Audiences Section */}
-            <section id="audiences" className="py-16 bg-muted/30 border-y">
+            <section id="audiences" className="py-16 bg-muted/30 border-y scroll-mt-20">
                 <div className="container mx-auto max-w-6xl px-4 sm:px-6">
                     <div className="text-center max-w-3xl mx-auto mb-12">
                         <h2 className="text-3xl font-bold tracking-tight">
@@ -302,7 +333,7 @@ export default function LandingPage() {
             </section>
 
             {/* Interactive Leaky Funnel Calculator */}
-            <section id="calculator" className="py-20">
+            <section id="calculator" className="py-20 scroll-mt-20">
                 <div className="container mx-auto max-w-5xl px-4 sm:px-6">
                     <div className="rounded-3xl border bg-card p-6 sm:p-10 shadow-lg">
                         <div className="text-center max-w-2xl mx-auto mb-10">
@@ -405,7 +436,7 @@ export default function LandingPage() {
             </section>
 
             {/* Features & Architecture Section */}
-            <section id="features" className="py-16 bg-muted/20 border-t">
+            <section id="features" className="py-16 bg-muted/20 border-t scroll-mt-20">
                 <div className="container mx-auto max-w-6xl px-4 sm:px-6">
                     <div className="text-center max-w-3xl mx-auto mb-14">
                         <h2 className="text-3xl font-bold tracking-tight">
@@ -453,7 +484,7 @@ export default function LandingPage() {
             </section>
 
             {/* Pricing Section */}
-            <section id="pricing" className="py-20">
+            <section id="pricing" className="py-20 scroll-mt-20">
                 <div className="container mx-auto max-w-6xl px-4 sm:px-6">
                     <div className="text-center max-w-3xl mx-auto mb-14">
                         <h2 className="text-3xl font-bold tracking-tight">
@@ -506,12 +537,14 @@ export default function LandingPage() {
 
                         {/* Pro Plan */}
                         <Card className="flex flex-col justify-between bg-card shadow-lg border-2 border-primary relative">
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-[11px] font-semibold text-primary-foreground shadow-xs">
-                                {t('planProBadge')}
-                            </div>
                             <CardHeader>
-                                <CardTitle className="text-xl">{t('planPro')}</CardTitle>
-                                <CardDescription>{t('planProDesc')}</CardDescription>
+                                <div className="flex items-center justify-between gap-2">
+                                    <CardTitle className="text-xl">{t('planPro')}</CardTitle>
+                                    <span className="rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground shadow-xs">
+                                        {t('planProBadge')}
+                                    </span>
+                                </div>
+                                <CardDescription className="mt-1">{t('planProDesc')}</CardDescription>
                                 <div className="mt-4 flex items-baseline gap-1">
                                     <span className="text-4xl font-extrabold">{t('planProPrice')}</span>
                                     <span className="text-xs text-muted-foreground">{t('planProPeriod')}</span>
