@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { api, ApiError } from '@/lib/api-client';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import {
@@ -37,6 +38,11 @@ export default function LandingPage() {
     const t = useTranslations('landing');
     const tNav = useTranslations('nav');
     const tCommon = useTranslations('common');
+    const b = useTranslations('backend');
+    const [isSubmitting,setIsSubmitting]=useState(false);
+    const [submitError,setSubmitError]=useState('');
+    const [consent,setConsent]=useState(false);
+    const [website,setWebsite]=useState('');
 
     // Calculator State
     const [inquiries, setInquiries] = useState<number>(450);
@@ -50,22 +56,26 @@ export default function LandingPage() {
 
     // Fake Door Modal State
     const [isBetaModalOpen, setIsBetaModalOpen] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState<string>('Профі ($49)');
+    const [selectedPlan, setSelectedPlan] = useState<'start'|'pro'|'enterprise'>('pro');
     const [leadName, setLeadName] = useState('');
     const [leadEmail, setLeadEmail] = useState('');
     const [leadPhone, setLeadPhone] = useState('');
     const [leadBizType, setLeadBizType] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    function handleOpenBetaModal(planName: string) {
+    function handleOpenBetaModal(planName: 'start'|'pro'|'enterprise') {
         setSelectedPlan(planName);
+        setSubmitError('');
         setIsSubmitted(false);
         setIsBetaModalOpen(true);
     }
 
-    function handleBetaSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setIsSubmitted(true);
+    async function handleBetaSubmit(e: React.FormEvent) {
+        e.preventDefault(); if(isSubmitting) return;
+        setIsSubmitting(true);setSubmitError('');
+        try {await api('/api/leads','POST',{name:leadName,email:leadEmail,phone:leadPhone,businessType:leadBizType,plan:selectedPlan,locale,consent,website});setIsSubmitted(true);}
+        catch(error){setSubmitError(error instanceof ApiError?error.code:'SERVER_ERROR');}
+        finally{setIsSubmitting(false);}
     }
 
     function handleScrollTo(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
@@ -155,13 +165,13 @@ export default function LandingPage() {
                             </Link>
                         </div>
 
-                        <Link href={`/${locale}/dashboard`}>
+                        <Link href={`/${locale}/login`}>
                             <Button variant="outline" size="sm" className="hidden sm:inline-flex">
                                 {tNav('demoDashboard')}
                             </Button>
                         </Link>
 
-                        <Button size="sm" onClick={() => handleOpenBetaModal(t('planStart'))}>
+                        <Button size="sm" onClick={() => handleOpenBetaModal('start')}>
                             {t('ctaPrimary')}
                         </Button>
                     </div>
@@ -189,13 +199,13 @@ export default function LandingPage() {
                             <Button
                                 size="lg"
                                 className="h-12 px-8 text-base shadow-md gap-2"
-                                onClick={() => handleOpenBetaModal(t('planPro'))}
+                                onClick={() => handleOpenBetaModal('pro')}
                             >
                                 <span>{t('ctaPrimary')}</span>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
 
-                            <Link href={`/${locale}/dashboard`}>
+                            <Link href={`/${locale}/demo`}>
                                 <Button size="lg" variant="outline" className="h-12 px-8 text-base w-full sm:w-auto">
                                     {t('ctaSecondary')}
                                 </Button>
@@ -216,7 +226,7 @@ export default function LandingPage() {
                                         <div className="h-3 w-3 rounded-full bg-emerald-400" />
                                     </div>
                                     <span className="text-xs font-mono text-muted-foreground">
-                                        live-ai-response-stream • 4.2s SLA
+                                        {b('demoNotice')}
                                     </span>
                                 </div>
                                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
@@ -418,14 +428,14 @@ export default function LandingPage() {
                                         </div>
                                         <div className="flex justify-between py-1.5 border-b">
                                             <span className="text-muted-foreground">{t('calcRoiProLabel')}</span>
-                                            <span className="font-bold text-primary font-mono">{roiMultiplier}x ROI</span>
+                                            <span className="font-bold text-primary font-mono">{roiMultiplier}x</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <Button
                                     className="mt-8 w-full h-11"
-                                    onClick={() => handleOpenBetaModal(t('planPro'))}
+                                    onClick={() => handleOpenBetaModal('pro')}
                                 >
                                     {t('calcCtaButton')}
                                 </Button>
@@ -528,7 +538,7 @@ export default function LandingPage() {
                                 <Button
                                     variant="outline"
                                     className="w-full"
-                                    onClick={() => handleOpenBetaModal(t('planStart'))}
+                                    onClick={() => handleOpenBetaModal('start')}
                                 >
                                     {t('selectPlanStart')}
                                 </Button>
@@ -575,7 +585,7 @@ export default function LandingPage() {
                             <CardFooter>
                                 <Button
                                     className="w-full shadow-md"
-                                    onClick={() => handleOpenBetaModal(t('planPro'))}
+                                    onClick={() => handleOpenBetaModal('pro')}
                                 >
                                     {t('selectPlanPro')}
                                 </Button>
@@ -614,7 +624,7 @@ export default function LandingPage() {
                                 <Button
                                     variant="outline"
                                     className="w-full"
-                                    onClick={() => handleOpenBetaModal(t('planEnterprise'))}
+                                    onClick={() => handleOpenBetaModal('enterprise')}
                                 >
                                     {t('selectPlanEnterprise')}
                                 </Button>
@@ -650,7 +660,7 @@ export default function LandingPage() {
             </footer>
 
             {/* Fake Door Lead Capture Modal */}
-            <Dialog open={isBetaModalOpen} onOpenChange={setIsBetaModalOpen}>
+            <Dialog open={isBetaModalOpen} onOpenChange={value=>{if(!isSubmitting)setIsBetaModalOpen(value);}}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl">{t('modalTitle')}</DialogTitle>
@@ -660,13 +670,13 @@ export default function LandingPage() {
                     {!isSubmitted ? (
                         <form onSubmit={handleBetaSubmit} className="space-y-4 pt-2">
                             <div className="rounded-lg bg-primary/10 p-3 text-xs font-medium text-primary">
-                                {t('selectedPlanBadge', { plan: selectedPlan })}
+                                {t('selectedPlanBadge', { plan: t({start:'planStart',pro:'planPro',enterprise:'planEnterprise'}[selectedPlan]) })}
                             </div>
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="leadName">{t('formName')}</Label>
                                 <Input
-                                    id="leadName"
+                                    id="leadName" minLength={2} maxLength={100}
                                     required
                                     placeholder={t('modalNamePlaceholder')}
                                     value={leadName}
@@ -677,7 +687,7 @@ export default function LandingPage() {
                             <div className="space-y-1.5">
                                 <Label htmlFor="leadEmail">{t('formEmail')}</Label>
                                 <Input
-                                    id="leadEmail"
+                                    id="leadEmail" maxLength={254}
                                     type="email"
                                     required
                                     placeholder="alex@myshop.com"
@@ -689,7 +699,7 @@ export default function LandingPage() {
                             <div className="space-y-1.5">
                                 <Label htmlFor="leadPhone">{t('formPhone')}</Label>
                                 <Input
-                                    id="leadPhone"
+                                    id="leadPhone" minLength={3} maxLength={100}
                                     required
                                     placeholder="+380... / @username"
                                     value={leadPhone}
@@ -700,15 +710,18 @@ export default function LandingPage() {
                             <div className="space-y-1.5">
                                 <Label htmlFor="leadBizType">{t('formBusinessType')}</Label>
                                 <Input
-                                    id="leadBizType"
+                                    id="leadBizType" maxLength={200}
                                     placeholder={t('modalBizPlaceholder')}
                                     value={leadBizType}
                                     onChange={(e) => setLeadBizType(e.target.value)}
                                 />
                             </div>
 
-                            <Button type="submit" className="w-full mt-4 h-11 text-base">
-                                {t('formSubmit')}
+                            <div className="hidden" aria-hidden="true"><label htmlFor="lead-website">Website</label><input id="lead-website" tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)}/></div>
+                            <label className="flex items-start gap-2 text-xs"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)} className="mt-0.5"/>{b('leadConsent')}</label>
+                            {submitError && <p role="alert" className="text-destructive text-sm">{b.has(submitError)?b(submitError):b('SERVER_ERROR')}</p>}
+                            <Button disabled={isSubmitting} type="submit" className="w-full mt-4 h-11 text-base">
+                                {isSubmitting?b('submitting'):t('formSubmit')}
                             </Button>
                         </form>
                     ) : (

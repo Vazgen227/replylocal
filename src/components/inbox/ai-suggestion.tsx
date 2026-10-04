@@ -47,7 +47,7 @@ export function AISuggestion({
     }
 
     return (
-        <aside className="flex h-full w-[360px] shrink-0 flex-col border-l bg-background">
+        <aside className="flex h-full w-full md:w-[280px] shrink-0 flex-col border-l bg-background">
             <div className="flex h-16 shrink-0 items-center gap-3 border-b px-5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Bot className="h-4 w-4" />

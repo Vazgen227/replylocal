@@ -10,11 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { api, ApiError } from '@/lib/api-client';
 
 export default function RegisterPage() {
     const locale = useLocale();
     const router = useRouter();
     const t = useTranslations('auth');
+    const b = useTranslations('backend');
+    const [error, setError] = useState('');
 
     const [name, setName] = useState('');
     const [bizName, setBizName] = useState('');
@@ -22,14 +25,17 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
+        if (isLoading) return;
+        setIsLoading(true); setError('');
+        try {
+            await api('/api/auth/register', 'POST', { name, companyName: bizName, email, password });
             toast.success(t('registerSuccess'));
-            router.push(`/${locale}/dashboard`);
-        }, 800);
+            router.replace(`/${locale}/dashboard`);
+            router.refresh();
+        } catch (error) { setError(error instanceof ApiError ? error.code : 'SERVER_ERROR'); }
+        finally { setIsLoading(false); }
     }
 
     return (
@@ -41,10 +47,11 @@ export default function RegisterPage() {
                     </div>
                     <CardTitle className="text-2xl font-bold">{t('register')}</CardTitle>
                     <CardDescription className="text-xs">
-                        {t('registerSubtitle')}
+                        {t('registerSubtitle')} {b('passwordHint')}
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
+                    {error && <p role="alert" className="px-4 pb-3 text-sm text-destructive">{b.has(error) ? b(error) : b("SERVER_ERROR")}</p>}
                     <CardContent className="space-y-3">
                         <div className="space-y-1">
                             <Label htmlFor="name" className="text-xs">{t('yourName')}</Label>
@@ -83,6 +90,8 @@ export default function RegisterPage() {
                                 <Input
                                     id="email"
                                     type="email"
+                                    autoComplete="email"
+                                    maxLength={254}
                                     required
                                     placeholder="alex@myshop.com"
                                     value={email}
@@ -99,6 +108,9 @@ export default function RegisterPage() {
                                 <Input
                                     id="password"
                                     type="password"
+                                    autoComplete="new-password"
+                                    maxLength={128}
+                                    minLength={12}
                                     required
                                     placeholder="••••••••"
                                     value={password}

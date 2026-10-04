@@ -10,24 +10,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { api, ApiError } from '@/lib/api-client';
 
 export default function LoginPage() {
     const locale = useLocale();
     const router = useRouter();
     const t = useTranslations('auth');
+    const b = useTranslations('backend');
+    const [error, setError] = useState('');
 
-    const [email, setEmail] = useState('demo@replylocal.io');
-    const [password, setPassword] = useState('••••••••');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
+        if (isLoading) return;
+        setIsLoading(true); setError('');
+        try {
+            await api('/api/auth/login', 'POST', { email, password });
             toast.success(t('loginSuccess'));
-            router.push(`/${locale}/dashboard`);
-        }, 800);
+            router.replace(`/${locale}/dashboard`);
+            router.refresh();
+        } catch (error) { setError(error instanceof ApiError ? error.code : 'SERVER_ERROR'); }
+        finally { setIsLoading(false); }
     }
 
     return (
@@ -43,6 +49,7 @@ export default function LoginPage() {
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
+                    {error && <p role="alert" className="px-4 pb-3 text-sm text-destructive">{b.has(error) ? b(error) : b("SERVER_ERROR")}</p>}
                     <CardContent className="space-y-4">
                         <div className="space-y-1.5">
                             <Label htmlFor="email" className="text-xs">{t('email')}</Label>
@@ -51,6 +58,8 @@ export default function LoginPage() {
                                 <Input
                                     id="email"
                                     type="email"
+                                    autoComplete="email"
+                                    maxLength={254}
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -62,15 +71,15 @@ export default function LoginPage() {
                         <div className="space-y-1.5">
                             <div className="flex justify-between items-center text-xs">
                                 <Label htmlFor="password">{t('password')}</Label>
-                                <span className="text-muted-foreground hover:underline cursor-pointer">
-                                    {t('forgotPassword')}
-                                </span>
+                                
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="password"
                                     type="password"
+                                    autoComplete="current-password"
+                                    maxLength={128}
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}

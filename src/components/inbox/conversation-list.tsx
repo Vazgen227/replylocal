@@ -38,7 +38,7 @@ export function ConversationList({
     const t = useTranslations('inbox');
 
     return (
-        <section className="flex h-full w-[340px] shrink-0 flex-col border-r bg-background">
+        <section className="flex h-64 md:h-full w-full md:w-[260px] shrink-0 flex-col border-r bg-background">
 
             {/* Header */}
 

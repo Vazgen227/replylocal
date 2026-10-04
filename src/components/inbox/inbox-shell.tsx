@@ -54,7 +54,7 @@ export function InboxShell({
         setDraftMessage('');
 
         const targetConv = conversations.find((c) => c.id === conversationId);
-        if (targetConv) {
+        if (targetConv && !['waiting_for_human','human_handling','resolved'].includes(targetConv.status)) {
             const lastCustomerMsg = [...targetConv.messages]
                 .reverse()
                 .find((m) => m.sender.type === 'customer');
@@ -64,7 +64,7 @@ export function InboxShell({
                     conversationId: targetConv.id,
                     customerName: targetConv.contact.name,
                     channel: targetConv.channel.type,
-                    lastMessage: lastCustomerMsg.content,
+                    lastMessage: targetConv.messages.filter(m=>m.sender.type==='customer').map(m=>m.content).join('\n'),
                     tone: activeTone,
                 });
 
@@ -84,7 +84,7 @@ export function InboxShell({
     }
 
     function handleEdit() {
-        if (!selectedConversation?.ai.suggestedReply) return;
+        if (!selectedConversation?.ai.suggestedReply || selectedConversation.ai.status === 'disabled') return;
         setDraftReply(selectedConversation.ai.suggestedReply);
         setIsEditing(true);
     }
@@ -154,7 +154,7 @@ export function InboxShell({
     }
 
     function handleSendAISuggestion() {
-        if (!selectedConversation?.ai.suggestedReply) return;
+        if (!selectedConversation?.ai.suggestedReply || selectedConversation.ai.status === 'disabled') return;
 
         const aiText = isEditing && draftReply ? draftReply : selectedConversation.ai.suggestedReply;
         const now = new Date();
@@ -168,7 +168,7 @@ export function InboxShell({
                 return {
                     ...conv,
                     unreadCount: 0,
-                    status: 'resolved' as const,
+                    status: 'ai_handling' as const,
                     lastMessage: aiText,
                     lastMessageAt: tCommon('justNow'),
                     messages: [
@@ -182,7 +182,7 @@ export function InboxShell({
                             },
                             content: aiText,
                             timestamp: timeStr,
-                            status: 'read' as const,
+                            status: 'sent' as const,
                         },
                     ],
                     ai: {
@@ -202,7 +202,7 @@ export function InboxShell({
     }
 
     function handleRegenerate() {
-        if (!selectedConversation) return;
+        if (!selectedConversation || selectedConversation.ai.status === 'disabled') return;
 
         const tones: Array<'friendly' | 'formal' | 'concise' | 'consultative'> = [
             'consultative',
@@ -223,7 +223,7 @@ export function InboxShell({
                 conversationId: selectedConversation.id,
                 customerName: selectedConversation.contact.name,
                 channel: selectedConversation.channel.type,
-                lastMessage: lastCustomerMsg.content,
+                lastMessage: selectedConversation.messages.filter(m=>m.sender.type==='customer').map(m=>m.content).join('\n'),
                 tone: nextTone,
             });
 
@@ -248,6 +248,7 @@ export function InboxShell({
                     ...conv,
                     status: 'waiting_for_human' as const,
                     priority: 'high' as const,
+                    ai: {status: 'disabled' as const, sources: []},
                     messages: [
                         ...conv.messages,
                         {
@@ -293,7 +294,7 @@ export function InboxShell({
     }
 
     return (
-        <div className="flex h-[calc(100vh-112px)] overflow-hidden rounded-xl border bg-background shadow-xs">
+        <div className="flex flex-col md:flex-row min-h-[600px] md:h-[calc(100vh-112px)] overflow-hidden rounded-xl border bg-background shadow-xs">
             <ConversationList
                 conversations={filteredConversations}
                 selectedConversationId={selectedConversation.id}
@@ -316,7 +317,7 @@ export function InboxShell({
                 />
             </section>
 
-            <div className="hidden xl:flex">
+            <div className="flex border-t md:border-t-0">
                 <AISuggestion
                     ai={selectedConversation.ai}
                     isEditing={isEditing}
