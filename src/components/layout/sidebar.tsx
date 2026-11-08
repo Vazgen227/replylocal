@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {useLocale,useTranslations} from 'next-intl';
-import {LayoutDashboard,Inbox,BookOpen,Plug,BarChart3,Settings,Home} from 'lucide-react';
-const links=[['dashboard',LayoutDashboard],['inbox',Inbox],['knowledge',BookOpen],['integrations',Plug],['analytics',BarChart3],['settings',Settings]] as const;
+import {LayoutDashboard,Inbox,CalendarDays,BookOpen,Plug,BarChart3,Settings,Home} from 'lucide-react';
+const links=[['dashboard',LayoutDashboard],['inbox',Inbox],['appointments',CalendarDays],['knowledge',BookOpen],['integrations',Plug],['analytics',BarChart3],['settings',Settings]] as const;
 export function Sidebar() {
   const locale=useLocale(),path=usePathname(),t=useTranslations('nav'),b=useTranslations('backend');
   return <aside className="flex w-14 md:w-60 shrink-0 flex-col border-r bg-background">

@@ -132,3 +132,52 @@ test("upgrade 0.3 → 0.4 preserves website visitor access, existing threads and
     await pg.close();
   }
 });
+test("upgrade 0.4 → 0.5 keeps data, leaves booking off and accepts reminder jobs", async () => {
+  const pg = await PGlite.create();
+  const query: Query = async (sql, params) =>
+    (await pg.query(sql, params)).rows as never;
+  const db: Database = {
+    query,
+    transaction: (work) =>
+      pg.transaction((tx) =>
+        work(async (sql, params) => (await tx.query(sql, params)).rows as never),
+      ),
+  };
+  try {
+    for (const name of ["001_initial.sql", "002_chat.sql", "003_omnichannel.sql"])
+      await pg.exec(await readFile(new URL(`../db/${name}`, import.meta.url), "utf8"));
+    const store = createStore(db);
+    const actor = (await store.identity(
+      await store.register({
+        name: "Garage Owner",
+        companyName: "Old Garage",
+        email: "garage@example.test",
+        password: "existing long password",
+      }),
+    ))!;
+    await query(
+      "INSERT INTO background_jobs(id,key,organization_id,kind,payload) VALUES(gen_random_uuid(),'old-email',$1,'email','{}')",
+      [actor.organizationId],
+    );
+    await pg.exec(await readFile(new URL("../db/004_service_station.sql", import.meta.url), "utf8"));
+    const [org] = await query<{ booking_settings: object; booking_version: number }>(
+      "SELECT booking_settings,booking_version FROM organizations WHERE id=$1",
+      [actor.organizationId],
+    );
+    assert.deepEqual(org.booking_settings, {});
+    assert.equal(org.booking_version, 1);
+    assert.equal((await query("SELECT id FROM background_jobs WHERE key='old-email'")).length, 1);
+    await query(
+      "INSERT INTO background_jobs(id,key,organization_id,kind,payload) VALUES(gen_random_uuid(),'r1',$1,'reminder','{}')",
+      [actor.organizationId],
+    );
+    await assert.rejects(
+      query(
+        "INSERT INTO background_jobs(id,key,organization_id,kind,payload) VALUES(gen_random_uuid(),'x1',$1,'unknown','{}')",
+        [actor.organizationId],
+      ),
+    );
+  } finally {
+    await pg.close();
+  }
+});

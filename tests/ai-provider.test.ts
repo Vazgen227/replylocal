@@ -90,3 +90,46 @@ test("Responses API contract, no remote storage, bounded output, strict result a
     else process.env.OPENAI_MODEL = model;
   }
 });
+test("booking mode sends free slots and a strict schema for car details; only listed slots are accepted", async () => {
+  const original = globalThis.fetch,
+    key = process.env.OPENAI_API_KEY,
+    model = process.env.OPENAI_MODEL;
+  process.env.OPENAI_API_KEY = "test-key-not-real";
+  process.env.OPENAI_MODEL = "test-model";
+  let reply: Record<string, unknown> = {};
+  const booking = {
+    now: "2026-11-10, 09:00",
+    timeZone: "Europe/Kyiv",
+    address: "Test street 1",
+    slots: ["2026-11-11T10:00", "2026-11-11T11:00"],
+  };
+  try {
+    globalThis.fetch = async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      const schema = body.text.format.schema;
+      assert.deepEqual(schema.required, ["answer", "handoff", "sourceIds", "intake", "bookingRequest"]);
+      assert.equal(schema.properties.intake.anyOf[0].additionalProperties, false);
+      assert.match(body.instructions, /Never say the booking is confirmed/);
+      assert.match(body.input[1].content, /2026-11-11: 2026-11-11T10:00, 2026-11-11T11:00/);
+      return Response.json({
+        status: "completed",
+        output: [{ content: [{ type: "output_text", text: JSON.stringify(reply) }] }],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      });
+    };
+    const base = { answer: "Preliminary request for 10:00.", handoff: false, sourceIds: [] };
+    const intake = { vehicle: "Golf", year: null, plate: null, vin: null, mileage: null, problem: null, phone: null, preferredTime: null };
+    reply = { ...base, intake, bookingRequest: { slot: "2026-11-11T10:00", serviceId: null } };
+    const ok = await openAIProvider({ ...context, booking });
+    assert.equal(ok.bookingRequest?.slot, "2026-11-11T10:00");
+    assert.equal(ok.intake?.vehicle, "Golf");
+    reply = { ...base, intake, bookingRequest: { slot: "2026-11-11T03:00", serviceId: null } };
+    await assert.rejects(openAIProvider({ ...context, booking }), /AI_UNGROUNDED/);
+    reply = { ...base, intake: null, bookingRequest: null };
+    await assert.rejects(openAIProvider({ ...context, booking }), /AI_UNGROUNDED/, "no source and no booking");
+  } finally {
+    globalThis.fetch = original;
+    process.env.OPENAI_API_KEY = key;
+    process.env.OPENAI_MODEL = model;
+  }
+});

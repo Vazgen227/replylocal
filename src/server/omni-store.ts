@@ -6,6 +6,7 @@ import type { createChatStore } from "./chat-store";
 import { AppError } from "./errors";
 import { digest, newToken } from "./passwords";
 import { seal, unseal, equalSecret, validHmac } from "./crypto-secrets";
+import { createBookingStore } from "./booking-store";
 import {
   ChannelFailure,
   parseChannel,
@@ -51,6 +52,8 @@ type Job = {
     to?: string;
     subject?: string;
     text?: string;
+    booking?: string;
+    startsAt?: string;
   };
   attempts: number;
   lock_token: string;
@@ -98,6 +101,7 @@ export function createOmniStore(
   fetcher: typeof fetch = fetch,
 ) {
   const base = createStore(db);
+  const bookings = createBookingStore(db);
   async function connection(id: string, org?: string) {
     const [r] = await db.query<Row>(
       "SELECT * FROM channel_connections WHERE id=$1" +
@@ -311,7 +315,12 @@ export function createOmniStore(
       `SELECT c.*,o.name FROM conversations c JOIN organizations o ON o.id=c.organization_id WHERE c.id=$1`,
       [job.payload.id],
     );
-    if (!c || c.mode !== "human" || c.status !== "open") return;
+    if (
+      !c ||
+      (c.mode !== "human" && !job.payload.booking) ||
+      c.status !== "open"
+    )
+      return;
     const [prefs] = await db.query(
       "SELECT enabled FROM notification_preferences WHERE organization_id=$1",
       [c.organization_id],
@@ -324,7 +333,9 @@ export function createOmniStore(
     if (recipients.length)
       await sendEmail(
         recipients.map((v) => v.email),
-        `${c.name}: требуется ответ / reply needed`,
+        job.payload.booking
+          ? `${c.name}: новая заявка на запись / new booking request`
+          : `${c.name}: требуется ответ / reply needed`,
         `${c.visitor_name} · ${c.channel}\n${appURL()}/ru/inbox/${job.payload.id}\nОткройте кабинет, чтобы прочитать обращение и ответить.`,
         job.id,
         fetcher,
@@ -645,6 +656,7 @@ export function createOmniStore(
           );
         } else if (job.kind === "delivery") await delivery(job.payload.id!);
         else if (job.kind === "notification") await notify(job);
+        else if (job.kind === "reminder") await bookings.remind(job.payload);
         else if (job.kind === "email") {
           const mail = unseal<{ to: string; subject: string; text: string }>(
             (job.payload as unknown as { encrypted: string }).encrypted,

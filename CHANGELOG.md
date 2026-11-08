@@ -1,3 +1,14 @@
+# ReplyLocal 0.5 (unreleased) — car service booking
+
+- Online booking for car service stations (Settings → Online booking): working hours per weekday, number of bays, slot step, default duration, booking horizon, minimum notice and the address used in confirmations. Off by default.
+- The assistant collects car details (make/model, year, plate, VIN, mileage, problem, phone, preferred time) into the conversation and may offer only free slots computed from hours and bays. An agreed slot becomes a preliminary request; it is never presented as confirmed. Slots not offered are rejected as ungrounded and handed to a person.
+- New Appointments page and an "Appointment and car" card in each conversation: confirm, reschedule, cancel, no-show and complete. Confirmation, rescheduling and cancellation messages go to the customer's original channel through the existing outbox.
+- Confirming qualifies the lead; completing a visit with an amount marks it won with value and profit, so the channel report fills without a separate form.
+- Reminder 24 hours before a confirmed visit (new `reminder` job kind). WhatsApp, Instagram and Telegram Business still enforce their 24-hour reply window.
+- One-click car-service knowledge template (13 services, 4 rules, no prices) in RU/UK/EN.
+- Knowledge retrieval understands Russian/Ukrainian word endings and common car-service synonyms.
+- Migration `db/004_service_station.sql`: run `npm run db:migrate` before deploying.
+
 # ReplyLocal 0.4 — 25/26 October 2026
 
 - Replaced unused channel scaffolding with official Telegram bot/Business, WhatsApp Cloud API, Viber bot and Instagram Login messaging transports.

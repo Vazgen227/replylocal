@@ -1,5 +1,6 @@
 "use client";
 import { OutcomePanel } from "@/components/omni/outcome-panel";
+import { ConversationBooking } from "@/components/booking/conversation-booking";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -181,6 +182,10 @@ export function OperatorThread({ id }: { id: string }) {
               </Button>
             </form>
           )}
+          <ConversationBooking
+            id={id}
+            onChanged={() => void reload().catch(() => {})}
+          />
           <OutcomePanel
             id={id}
             onChanged={() => void reload().catch(() => {})}

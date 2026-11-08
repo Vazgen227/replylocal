@@ -227,7 +227,7 @@ before(async () => {
   process.env.RESEND_API_KEY = "test-resend";
   process.env.EMAIL_FROM = "test@example.test";
   process.env.BILLING_ENFORCED = "false";
-  for (const file of ["001_initial.sql", "002_chat.sql", "003_omnichannel.sql"])
+  for (const file of ["001_initial.sql", "002_chat.sql", "003_omnichannel.sql", "004_service_station.sql"])
     await pg.exec(
       await readFile(new URL("../db/" + file, import.meta.url), "utf8"),
     );

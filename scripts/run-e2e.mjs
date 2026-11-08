@@ -102,12 +102,49 @@ const fixture = createServer(async (req, res) => {
     res.end(JSON.stringify(data));
     return;
   }
+  // Browsers also ask this origin for /favicon.ico; only POSTs are AI calls.
+  if (req.method !== "POST") {
+    res.statusCode = 404;
+    res.end();
+    return;
+  }
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
   const input = JSON.parse(Buffer.concat(chunks).toString());
   const entries = JSON.parse(
     input.input[0].content.split("\n").slice(1).join("\n"),
   );
+  // Booking mode: the slot list follows the knowledge message. A visitor asking
+  // to book gets the first free slot as a preliminary request with car details.
+  const slotMessage = input.input.find(
+    (m) => m.role === "developer" && m.content.startsWith("FREE SLOTS"),
+  );
+  const lastVisitor = [...input.input].reverse().find((m) => m.role === "user");
+  const firstSlot = slotMessage?.content.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)?.[0];
+  const reply =
+    slotMessage && firstSlot && /book|запис/i.test(lastVisitor?.content ?? "")
+      ? {
+          answer: `Preliminary request for ${firstSlot.replace("T", " ")}. The administrator will confirm.`,
+          handoff: false,
+          sourceIds: [entries[0].id],
+          intake: {
+            vehicle: "Skoda Octavia",
+            year: "2015",
+            plate: null,
+            vin: null,
+            mileage: null,
+            problem: "Check engine light",
+            phone: "+380501234567",
+            preferredTime: null,
+          },
+          bookingRequest: { slot: firstSlot, serviceId: null },
+        }
+      : {
+          answer: "Inspection costs 250 UAH.",
+          handoff: false,
+          sourceIds: [entries[0].id],
+          ...(slotMessage ? { intake: null, bookingRequest: null } : {}),
+        };
   res.setHeader("Content-Type", "application/json");
   res.end(
     JSON.stringify({
@@ -117,11 +154,7 @@ const fixture = createServer(async (req, res) => {
           content: [
             {
               type: "output_text",
-              text: JSON.stringify({
-                answer: "Inspection costs 250 UAH.",
-                handoff: false,
-                sourceIds: [entries[0].id],
-              }),
+              text: JSON.stringify(reply),
             },
           ],
         },
@@ -196,6 +229,9 @@ try {
     "/api/billing",
     "/api/conversations/00000000-0000-4000-8000-000000000000",
     "/api/conversations/00000000-0000-4000-8000-000000000000/outcome",
+    "/api/conversations/00000000-0000-4000-8000-000000000000/booking",
+    "/api/booking/settings",
+    "/api/appointments/slots",
   ])
     await fetch(env.APP_URL + path);
   await run([

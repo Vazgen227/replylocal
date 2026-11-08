@@ -1,0 +1,88 @@
+// Starter knowledge for a car service station. Prices are intentionally empty:
+// the owner fills in real prices; the assistant never invents them.
+type Entry = {
+  kind: "service" | "rule";
+  title: string;
+  content: string;
+  durationMinutes: number | null;
+};
+type Row = [kind: Entry["kind"], duration: number | null, ru: [string, string], uk: [string, string], en: [string, string]];
+const rows: Row[] = [
+  ["service", 45,
+    ["Компьютерная диагностика", "Диагностика автомобиля сканером, чтение и расшифровка ошибок двигателя и электронных систем (check engine). Итоговый объём ремонта согласует мастер после диагностики."],
+    ["Комп'ютерна діагностика", "Діагностика автомобіля сканером, зчитування та розшифрування помилок двигуна та електронних систем (check engine). Остаточний обсяг ремонту погоджує майстер після діагностики."],
+    ["Computer diagnostics", "Scanner diagnostics, reading and explaining engine and electronics fault codes (check engine). The final scope of repair is agreed with the technician after diagnostics."]],
+  ["service", 60,
+    ["Замена масла и фильтров (ТО)", "Плановое техобслуживание: замена моторного масла, масляного фильтра, при необходимости воздушного и салонного фильтров. Можно со своими материалами клиента по правилам СТО."],
+    ["Заміна мастила та фільтрів (ТО)", "Планове технічне обслуговування: заміна моторної оливи, масляного фільтра, за потреби повітряного та салонного фільтрів. Можна з власними матеріалами клієнта за правилами СТО."],
+    ["Oil and filter change (service)", "Scheduled maintenance: engine oil and oil filter change, air and cabin filters if needed. Customer-supplied materials are accepted under the shop rules."]],
+  ["service", 60,
+    ["Развал-схождение", "Регулировка углов установки колёс на стенде. Рекомендуется после ремонта ходовой, замены шин или если автомобиль уводит в сторону."],
+    ["Розвал-сходження", "Регулювання кутів встановлення коліс на стенді. Рекомендовано після ремонту ходової, заміни шин або якщо автомобіль тягне вбік."],
+    ["Wheel alignment", "Wheel alignment on a stand. Recommended after suspension work, new tyres, or when the car pulls to one side."]],
+  ["service", 60,
+    ["Шиномонтаж", "Сезонная замена шин, снятие и установка колёс, балансировка, ремонт проколов."],
+    ["Шиномонтаж", "Сезонна заміна шин, зняття та встановлення коліс, балансування, ремонт проколів."],
+    ["Tyre fitting", "Seasonal tyre change, wheel removal and fitting, balancing, puncture repair."]],
+  ["service", 90,
+    ["Ремонт тормозной системы", "Замена тормозных колодок и дисков, прокачка и замена тормозной жидкости, диагностика тормозов."],
+    ["Ремонт гальмівної системи", "Заміна гальмівних колодок і дисків, прокачування та заміна гальмівної рідини, діагностика гальм."],
+    ["Brake repair", "Brake pads and discs replacement, brake fluid bleeding and change, brake inspection."]],
+  ["service", 60,
+    ["Диагностика ходовой и подвески", "Проверка подвески, рулевого управления, амортизаторов, сайлентблоков и шаровых опор на подъёмнике."],
+    ["Діагностика ходової та підвіски", "Перевірка підвіски, рульового керування, амортизаторів, сайлентблоків і кульових опор на підйомнику."],
+    ["Suspension inspection", "Lift inspection of suspension, steering, shock absorbers, bushings and ball joints."]],
+  ["service", 120,
+    ["Ремонт ходовой части", "Замена амортизаторов, рычагов, сайлентблоков, шаровых опор, стоек стабилизатора, рулевых тяг и наконечников."],
+    ["Ремонт ходової частини", "Заміна амортизаторів, важелів, сайлентблоків, кульових опор, стійок стабілізатора, рульових тяг і наконечників."],
+    ["Suspension repair", "Replacement of shock absorbers, control arms, bushings, ball joints, stabilizer links, tie rods and ends."]],
+  ["service", 60,
+    ["Заправка и диагностика кондиционера", "Проверка герметичности системы кондиционирования, заправка фреоном, замена салонного фильтра."],
+    ["Заправка та діагностика кондиціонера", "Перевірка герметичності системи кондиціонування, заправка фреоном, заміна салонного фільтра."],
+    ["Air conditioning service", "A/C leak check, refrigerant recharge, cabin filter replacement."]],
+  ["service", 60,
+    ["Автоэлектрика", "Диагностика и ремонт электрооборудования: аккумулятор, генератор, стартер, проводка, освещение."],
+    ["Автоелектрика", "Діагностика та ремонт електрообладнання: акумулятор, генератор, стартер, проводка, освітлення."],
+    ["Auto electrics", "Diagnostics and repair of electrical systems: battery, alternator, starter, wiring, lights."]],
+  ["service", 180,
+    ["Замена ремня или цепи ГРМ", "Замена комплекта ГРМ (ремень или цепь, ролики, при необходимости помпа). Точная стоимость зависит от модели двигателя."],
+    ["Заміна ременя або ланцюга ГРМ", "Заміна комплекту ГРМ (ремінь або ланцюг, ролики, за потреби помпа). Точна вартість залежить від моделі двигуна."],
+    ["Timing belt or chain replacement", "Timing kit replacement (belt or chain, rollers, water pump if needed). The exact price depends on the engine."]],
+  ["service", 120,
+    ["Ремонт двигателя", "Диагностика и ремонт двигателя. Стоимость и сроки определяются после осмотра мастером."],
+    ["Ремонт двигуна", "Діагностика та ремонт двигуна. Вартість і терміни визначаються після огляду майстром."],
+    ["Engine repair", "Engine diagnostics and repair. Price and timing are set after the technician inspects the car."]],
+  ["service", 60,
+    ["Замена охлаждающей жидкости", "Замена антифриза, проверка системы охлаждения и радиатора."],
+    ["Заміна охолоджувальної рідини", "Заміна антифризу, перевірка системи охолодження та радіатора."],
+    ["Coolant replacement", "Antifreeze replacement, cooling system and radiator check."]],
+  ["service", 30,
+    ["Проверка автомобиля перед покупкой", "Осмотр подержанного автомобиля перед покупкой: компьютерная диагностика, ходовая, кузов."],
+    ["Перевірка автомобіля перед купівлею", "Огляд вживаного автомобіля перед купівлею: комп'ютерна діагностика, ходова, кузов."],
+    ["Pre-purchase inspection", "Used car inspection before purchase: computer diagnostics, suspension, body."]],
+  ["rule", null,
+    ["Запись и подтверждение времени", "Онлайн-запись предварительная. Время визита подтверждает администратор. Для записи нужны: марка и модель авто, год, описание проблемы или нужная услуга, удобное время и телефон."],
+    ["Запис і підтвердження часу", "Онлайн-запис попередній. Час візиту підтверджує адміністратор. Для запису потрібні: марка та модель авто, рік, опис проблеми або потрібна послуга, зручний час і телефон."],
+    ["Booking and confirmation", "Online booking is preliminary. The visit time is confirmed by the administrator. To book we need: car make and model, year, problem or required service, preferred time and phone."]],
+  ["rule", null,
+    ["Смета и стоимость работ", "Цены указаны за работу без учёта запчастей. Окончательная смета согласуется с клиентом до начала ремонта. Дополнительные работы выполняются только после согласия клиента."],
+    ["Кошторис і вартість робіт", "Ціни вказано за роботу без урахування запчастин. Остаточний кошторис погоджується з клієнтом до початку ремонту. Додаткові роботи виконуються лише після згоди клієнта."],
+    ["Estimate and prices", "Prices are for labour only, parts excluded. The final estimate is agreed with the customer before work starts. Extra work is done only with the customer's consent."]],
+  ["rule", null,
+    ["Запчасти клиента", "Возможность установки запчастей клиента и условия гарантии на такие работы уточняет мастер."],
+    ["Запчастини клієнта", "Можливість встановлення запчастин клієнта та умови гарантії на такі роботи уточнює майстер."],
+    ["Customer-supplied parts", "Whether customer-supplied parts can be fitted, and the warranty terms for such work, are confirmed by the technician."]],
+  ["rule", null,
+    ["Сложные вопросы и подбор запчастей", "Точная совместимость запчастей, гарантийные случаи, споры и нестандартные работы передаются сотруднику. Для подбора запчастей попросить VIN-код."],
+    ["Складні питання та підбір запчастин", "Точна сумісність запчастин, гарантійні випадки, спори та нестандартні роботи передаються працівнику. Для підбору запчастин попросити VIN-код."],
+    ["Complex questions and parts", "Exact part compatibility, warranty cases, disputes and non-standard work are handed to a team member. Ask for the VIN to select parts."]],
+];
+export function serviceStationTemplate(locale: "ru" | "uk" | "en"): Entry[] {
+  const index = { ru: 2, uk: 3, en: 4 }[locale] as 2 | 3 | 4;
+  return rows.map((r) => ({
+    kind: r[0],
+    durationMinutes: r[1],
+    title: r[index][0],
+    content: r[index][1],
+  }));
+}

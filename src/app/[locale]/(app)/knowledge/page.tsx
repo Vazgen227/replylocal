@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/workspace-provider";
 import { api, ApiError } from "@/lib/api-client";
@@ -25,6 +25,7 @@ import {
 export default function Knowledge() {
   const { data, reload } = useWorkspace();
   const t = useTranslations("backend"),
+    b = useTranslations("booking"),
     locale = useLocale();
   const [kind, setKind] = useState<KnowledgeInput["kind"]>("service");
   const [search, setSearch] = useState(""),
@@ -118,10 +119,36 @@ export default function Knowledge() {
             {t("knowledgeIntro")}
           </p>
         </div>
-        <Button disabled={!writable} onClick={() => start()}>
-          <Plus className="size-4" />
-          {t("add")}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            disabled={!writable || busy}
+            title={b("templateHint")}
+            onClick={async () => {
+              if (!window.confirm(b("templateConfirm"))) return;
+              setBusy(true);
+              try {
+                const r = await api<{ added: number }>("/api/knowledge/template", "POST", {
+                  template: "service-station",
+                  locale,
+                });
+                toast.success(b("templateAdded", { count: r.added }));
+                await reload();
+              } catch (error) {
+                toast.error(errorCode(error));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <Wrench className="size-4" />
+            {b("templateButton")}
+          </Button>
+          <Button disabled={!writable} onClick={() => start()}>
+            <Plus className="size-4" />
+            {t("add")}
+          </Button>
+        </div>
       </div>
       <div className="flex flex-wrap gap-3 items-center justify-between">
         <Tabs

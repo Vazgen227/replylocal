@@ -5,7 +5,13 @@ import { aiEntitlement } from "./entitlements";
 import { AppError } from "./errors";
 import { newToken, digest } from "./passwords";
 import { retrieveKnowledge } from "./retrieval";
-import type { AIProvider } from "./ai-provider";
+import {
+  groundingValid,
+  type AIBookingRequest,
+  type AIIntake,
+  type AIProvider,
+} from "./ai-provider";
+import { createBookingStore } from "./booking-store";
 import type {
   ChatConfig,
   Thread,
@@ -46,6 +52,7 @@ export function createChatStore(
   configured: () => boolean,
 ) {
   const base = createStore(db);
+  const bookings = createBookingStore(db);
   const columns = `id,channel,assigned_to AS "assignedTo",lead_stage AS "leadStage",visitor_name AS "visitorName",visitor_contact AS "visitorContact",locale,status,mode,version,(processing_id IS NOT NULL AND processing_until>now()) AS busy,updated_at AS "updatedAt"`;
   async function event(q: Query, org: string, id: string, code: string) {
     await q(
@@ -290,8 +297,13 @@ export function createChatStore(
         handoff = false,
         inputTokens = 0,
         outputTokens = 0,
-        code = "ai.replied";
+        code = "ai.replied",
+        intake: AIIntake | null | undefined,
+        bookingRequest: AIBookingRequest | null | undefined,
+        bookingEnabled = false;
       try {
+        const booking = await bookings.aiContext(request.organization_id);
+        bookingEnabled = !!booking;
         const actor: Identity = {
           userId: "",
           organizationId: request.organization_id,
@@ -309,7 +321,9 @@ export function createChatStore(
             .map((m) => m.content)
             .join("\n"),
         );
-        if (!entries.length) {
+        // With booking enabled the assistant can still collect car details and
+        // offer free slots even when no knowledge entry matches the question.
+        if (!entries.length && !booking) {
           answer = notes[request.locale].waiting;
           handoff = true;
           code = "ai.no_knowledge";
@@ -321,13 +335,15 @@ export function createChatStore(
             locale: request.locale,
             entries,
             history: thread.messages.filter((m) => m.sender !== "system"),
+            ...(booking ? { booking } : {}),
           });
           const allowed = new Set(entries.map((e) => e.id));
-          if (
-            result.sourceIds.some((id) => !allowed.has(id)) ||
-            (!result.handoff && !result.sourceIds.length)
-          )
+          if (!groundingValid(result, allowed, booking?.slots))
             throw new Error("AI_UNGROUNDED");
+          if (booking) {
+            intake = result.intake;
+            bookingRequest = result.bookingRequest;
+          }
           answer = result.answer;
           handoff = result.handoff;
           inputTokens = result.inputTokens;
@@ -358,6 +374,29 @@ export function createChatStore(
           [request.organization_id, inputTokens, outputTokens],
         );
         if (!changed.length) return;
+        if (bookingEnabled && (intake || bookingRequest)) {
+          const applied = await bookings.applyAssistant(
+            q,
+            request.organization_id,
+            id,
+            intake,
+            bookingRequest,
+          );
+          if (applied.created) {
+            await event(q, request.organization_id, id, "booking.requested");
+            // Ask the team to confirm even though the assistant keeps the conversation.
+            await q(
+              "INSERT INTO background_jobs(id,key,organization_id,kind,payload) VALUES($1,$2,$3,'notification',$4::jsonb) ON CONFLICT(key) DO NOTHING",
+              [
+                randomUUID(),
+                "notify:booking:" + applied.created + ":" + Date.now(),
+                request.organization_id,
+                JSON.stringify({ id, booking: applied.created }),
+              ],
+            );
+          } else if (applied.rejected)
+            await event(q, request.organization_id, id, "booking.slot_unavailable");
+        }
         await q(
           "INSERT INTO messages(id,conversation_id,sender,content,sources) VALUES($1,$2,$3,$4,$5::jsonb)",
           [
