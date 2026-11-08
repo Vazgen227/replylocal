@@ -1,94 +1,75 @@
-# HTTP API — ReplyLocal 0.2
+# HTTP API — ReplyLocal 0.4
 
-Все маршруты работают в Next.js Node runtime. Защищённые запросы используют cookie `replylocal_session`; отдельного bearer-токена нет. Ответы API имеют `Cache-Control: no-store`.
+Private endpoints use HttpOnly `replylocal_session`. The company and role come from the session, never from a caller-supplied organization ID. Mutations require an exact `Origin` match with `APP_URL` and JSON Content-Type (except signed provider webhooks / authenticated jobs). JSON bodies are limited to 64 KiB; webhook raw bodies to 256 KiB. Unknown JSON fields are rejected. Responses are no-store. Validation schemas are in `src/lib/schemas.ts`, `chat-schemas.ts`, `omni-schemas.ts`.
 
-Для изменяющих запросов обязателен `Origin`, точно совпадающий с origin из `APP_URL`. Для запросов с телом нужен `Content-Type: application/json`; максимальный размер тела — 65 536 байт. Неизвестные поля отклоняются. `POST /api/auth/logout` не требует тела.
+Owner/admin manage business knowledge, settings and channel credentials; an agent can read the company inbox, reply, record outcomes, assign themselves and add internal notes. Owner alone changes admin roles and opens Stripe billing flows. Removed memberships immediately stop authenticating their sessions. Public visitor Bearer tokens are separate from employee sessions.
 
-Сервер получает организацию и роль из сессии. Нельзя передать `organizationId` и выбрать чужую компанию. Владелец и администратор изменяют знания и настройки; агент только читает. Управление членством пока отсутствует.
+## Accounts and knowledge
 
-| Метод | Маршрут | Вход / результат |
+| Method | Route | Input / result |
 | --- | --- | --- |
-| POST | `/api/auth/register` | `{name, companyName, email, password}` → 201 `{ok:true}` + cookie; нужен `ALLOW_SIGNUP=true` |
-| POST | `/api/auth/login` | `{email,password}` → `{ok:true}` + cookie |
-| POST | `/api/auth/logout` | Отзыв текущей сессии и удаление cookie |
-| POST | `/api/auth/password` | `{currentPassword,newPassword}` → `{ok:true}`, все сессии пользователя отозваны |
-| GET | `/api/workspace` | `{user,organization,team,entries}` текущей компании |
-| PATCH | `/api/settings` | Полный объект настроек с `version` → `{ok:true}` |
-| GET | `/api/knowledge` | `{entries:[...]}` текущей компании |
-| POST | `/api/knowledge` | Полный объект знания → 201 `{id}` |
-| PATCH | `/api/knowledge/:id` | Полный объект знания + `version` → `{ok:true}` |
-| DELETE | `/api/knowledge/:id` | JSON `{version}` → `{ok:true}` |
-| POST | `/api/leads` | Данные заявки + `consent:true` → 201 `{ok:true}` |
+| POST | `/api/auth/register` | `{name,companyName,email,password}`; requires ALLOW_SIGNUP=true; 201 + session |
+| POST | `/api/auth/login` | `{email,password}`; session |
+| POST | `/api/auth/logout` | Revoke current session |
+| POST | `/api/auth/password` | `{currentPassword,newPassword}`; revoke all user sessions |
+| POST | `/api/auth/reset/request` | `{email}`; uniform 202 when email service configured; rate limited |
+| POST | `/api/auth/reset` | `{token,password}`; consume one-time reset and revoke sessions |
+| GET | `/api/workspace` | `{user,organization,team,entries}` |
+| PATCH | `/api/settings` | Complete organization settings including version |
+| GET / POST | `/api/knowledge` | List / create service, product or rule |
+| PATCH / DELETE | `/api/knowledge/:id` | Complete entry + version / `{version}` |
+| POST | `/api/leads` | Public contact request with consent and honeypot |
 
-После изменения заново запросите `/api/workspace`, чтобы получить актуальную версию. При 409 загрузите новые данные и предложите пользователю повторить изменение; автоматически перетирать новую запись нельзя.
+Knowledge price/gross profit/cost values support UAH, USD, EUR and PLN, with at most two decimals; a null knowledge price means unknown. Settings systemPrompt/tone are used by AI. offHoursMessage is a retained settings field; scheduling business hours is not implemented.
 
-## Пример знания
+## Website and unified inbox
 
-```json
-{
-  "kind": "service",
-  "title": "Осмотр автомобиля",
-  "content": "Визуальный осмотр по предварительной записи.",
-  "price": 0,
-  "currency": "UAH",
-  "durationMinutes": 30,
-  "sku": ""
-}
-```
+| Method | Route | Input / result |
+| --- | --- | --- |
+| GET / PATCH | `/api/chat/config` | Private website config and shared AI preferences / `{enabled,autoReply,welcome,dailyLimit,version}` |
+| GET | `/api/chat/config?publicId=UUID` | Public enabled config |
+| POST | `/api/chat/session` | `{publicId,name,contact,locale,consent:true,attribution?,website?}` → `{token,thread}` |
+| GET | `/api/chat/messages?conversationId=UUID` | Visitor Bearer token required |
+| POST | `/api/chat/messages` | Visitor Bearer + `{conversationId,clientId:UUID,text}` |
+| POST | `/api/chat/handoff` | Visitor Bearer + `{conversationId}` |
+| GET | `/api/conversations` | `{threads,hasNext}`; query search (max 200), channel, status=all/waiting/closed, mine=true/false, page=0-based; 25 rows/page |
+| GET / PATCH / DELETE | `/api/conversations/:id` | Thread / `{action,version}` / remove conversation and associated saved payloads |
+| POST | `/api/conversations/:id/reply` | `{clientId:UUID,text}`; transactionally saves message and queues external delivery |
+| GET | `/api/conversations/:id/export` | JSON attachment |
+| GET / PATCH | `/api/conversations/:id/outcome` | Source, outcome, attribution, notes and deliveries / `{version,stage,value,grossProfit,currency,nextStep,assignedTo}` |
+| POST | `/api/conversations/:id/notes` | `{content}`; private to team, excluded from AI |
+| POST | `/api/deliveries/retry` | `{id,confirmPossibleDuplicate:true}`; retry failed or uncertain delivery |
+| GET | `/api/analytics` | Counts, current-day AI usage and enabled connections |
+| GET | `/api/analytics/channels?month=YYYY-MM-01` | Cohort report and versioned monthly costs |
+| POST | `/api/analytics/channels` | `{channel,month,currency,amount,version}`; version=0 creates, existing requires current version |
 
-`kind`: `service`, `product`, `rule`. `price`: число не меньше нуля, не более 9 999 999 999.99, до 2 знаков после точки; `null` означает неуказанную цену. `durationMinutes`: 1–10080 или `null`. Валюты: UAH, USD, EUR, PLN. Ответ содержит `id`, `version`, `updatedAt`. PATCH дополнительно требует актуальную положительную целую `version`.
+Conversation actions: takeover/resume/close/reopen. Outcomes: new/qualified/won/lost. Source is immutable. Deal value is counted as revenue only for won outcomes; recorded profit covers only non-null profit values on won deals. Month filters conversation creation time in UTC, not payment date. CSV export is built in the browser from the same report response. Thread responses show a chronological window of the latest 250 messages; JSON export contains the full stored message history. Outcome version is independent of message activity so replies do not invalidate the deal form. Retention and deletion affect historical reports.
 
-## Пример настроек
+## Channels, workers and team
 
-```json
-{
-  "name": "Мастерская",
-  "industry": "Автосервис",
-  "timezone": "Europe/Kyiv",
-  "currency": "UAH",
-  "aiSettings": {
-    "systemPrompt": "Использовать только подтверждённые факты.",
-    "tone": "friendly",
-    "offHoursMessage": ""
-  },
-  "version": 1
-}
-```
+| Method | Route | Input / result |
+| --- | --- | --- |
+| GET / POST | `/api/channels` | Safe connection details / `{provider,label,accessToken,appSecret?,accountId?,telegramMode?,businessUserId?}` |
+| PUT | `/api/channels/:id` | `{credentials:<connection input>,version}`; replace credentials and disable until re-enabled |
+| PATCH | `/api/channels/:id` | `{enabled,version}`; verify credentials and install Telegram/Viber webhook when enabling |
+| GET / POST | `/api/webhooks/:id` | Meta verify challenge / provider-signed raw body |
+| GET / POST | `/api/webhooks/meta` | Shared Meta app challenge / HMAC-verified multi-account event routing |
+| GET / POST | `/api/jobs/run` | `Authorization: Bearer CRON_SECRET`; bounded worker pass |
+| GET / POST | `/api/jobs` | Admin diagnostics / `{id}` retries a failed job |
+| GET / POST | `/api/workspaces` | `{currentId,workspaces}` / `{id}` issues session for a membership |
+| GET / POST / PATCH / DELETE | `/api/team` | Team/pending invites/preferences / `{email,role}` / `{enabled}` notifications / `{id}` revoke invite |
+| POST | `/api/team/member` | `{id,role:admin/agent/null}`; null removes membership |
+| POST | `/api/team/accept` | `{token}` logged in as the invited email |
+| POST | `/api/team/register` | `{token,email,name,password}`; create an invited account even if public signup closed |
+| GET / POST | `/api/billing` | Actual stored subscription/config state / `{action:checkout/portal,locale}` returns Stripe URL |
+| POST | `/api/billing/webhook` | Stripe-signed raw body |
 
-`tone`: friendly, formal, concise, consultative. AI-настройки только сохраняются для будущей интеграции. Они не запускают генерацию ответов.
+Secrets use AES-256-GCM with connection-specific authenticated data. Webhooks use Telegram secret-token headers or provider HMACs; Meta challenge tokens are separate from HMAC app secrets. Inbound event IDs deduplicate before queueing. Outbox rows are created by a PostgreSQL trigger in the same transaction as outgoing messages. Queue leases and SKIP LOCKED allow multiple workers. Lost/ambiguous send confirmations become uncertain instead of blindly resending. Receipts are scoped to connection account IDs.
 
-## Пример заявки
+External text responses are chunked at 1,000 characters for Instagram and 4,000 for other channels. No arbitrary URL downloads, personal messenger scraping, bulk marketing or message-template bypass. External attachments trigger human review rather than AI guessing their contents.
 
-```json
-{
-  "name": "Иван",
-  "email": "owner@example.com",
-  "phone": "@contact",
-  "businessType": "Автосервис",
-  "plan": "start",
-  "locale": "ru",
-  "consent": true,
-  "website": ""
-}
-```
+## Errors
 
-`plan`: start, pro, enterprise; `locale`: uk, ru, en. Непустой `website` — honeypot: сервер отвечает успешно, но заявку не сохраняет. Заявки не создают оплату и не отправляют уведомления.
+App errors return `{error:CODE}` with 4xx/503 as appropriate; validation may include fields. Unexpected errors return a random incident ID and do not log request bodies or tokens. Typical codes: UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INVALID_INPUT, RATE_LIMITED, CHANNEL_ALREADY_CONNECTED, INVALID_SIGNATURE, INVALID_CREDENTIALS, ENCRYPTION_NOT_CONFIGURED, EMAIL_NOT_CONFIGURED. Delivery rows retain safe diagnostic codes (REPLY_WINDOW_CLOSED, NETWORK_UNCERTAIN, PROVIDER_HTTP_401, etc.).
 
-## Ошибки
-
-Формат: `{ "error": "CODE" }`. При неверных полях дополнительно `fields`; при неожиданной ошибке — идентификатор `incident` для сопоставления с серверным журналом, без SQL и секретов.
-
-| HTTP | Значение |
-| --- | --- |
-| 400 | INVALID_INPUT |
-| 401 | UNAUTHORIZED / INVALID_CREDENTIALS |
-| 403 | FORBIDDEN / ORIGIN_REJECTED / SIGNUP_CLOSED |
-| 404 | NOT_FOUND: запись отсутствует или принадлежит другой компании |
-| 409 | CONFLICT / ACCOUNT_EXISTS / KNOWLEDGE_LIMIT |
-| 413 | BODY_TOO_LARGE |
-| 415 | INVALID_CONTENT_TYPE |
-| 429 | RATE_LIMITED; Retry-After: 900 |
-| 503 | NOT_CONFIGURED |
-| 500 | SERVER_ERROR |
-
-Полные ограничения полей — `src/lib/schemas.ts`. Пароль при регистрации/смене: 12–128 символов. Email нормализуется к нижнему регистру.
+On 409 reload data before repeating an edit. Reuse the same clientId when retrying the same message. Never replace a failed delivery with a new logical message solely to hide its status.

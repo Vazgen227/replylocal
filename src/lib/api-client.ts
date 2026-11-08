@@ -4,7 +4,7 @@ export class ApiError extends Error {
   constructor(public code:string,public status:number,public fields:string[]=[]) {super(code);}
 }
 export async function api<T= {ok:boolean}>(path:string,method='GET',body?:unknown):Promise<T> {
-  const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),20000);
+  const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),45000);
   try {
     const response=await fetch(path,{method,credentials:'same-origin',cache:'no-store',signal:controller.signal,
       headers:body===undefined ? undefined : {'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});

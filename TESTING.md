@@ -1,27 +1,6 @@
-# Проверки версии 0.2
+# Repeating verification
 
-Дата: 27 сентября 2026. Среда: Linux, Node.js 24.19.0, npm 11.9.0, Next.js 16.3.2.
-
-| Проверка | Результат |
-| --- | --- |
-| `npm run lint` | Успешно |
-| `npm run typecheck` | Успешно |
-| `npm test` | 14 / 14 пройдено |
-| `npm run test:e2e` | 2 / 2 пройдено |
-| `npm run build` | Production-сборка успешна |
-| Повторный запуск миграции | Успешно; применённая миграция повторно не выполняется |
-| Мобильные настройки, 390 px | Снимок просмотрен; горизонтального переполнения нет |
-| База знаний, 1440 px | Снимок просмотрен |
-
-## Что проверяют тесты
-
-Серверные проверки выполняют настоящие SQL-запросы на PostgreSQL-совместимом движке PGlite, без моков SQL-ответов. Проверяются хеширование паролей и токенов, атомарность регистрации и откат дубликата, вход, отдельные компании, запрет чужого редактирования и удаления, права агента, конфликты версий, сохранение цены 0, настройки, валидация и согласие на заявку, honeypot, общие лимиты, истечение/отзыв сессий и смена пароля, журнал действий.
-
-Сквозной runner поднимает временную БД PGlite через PostgreSQL wire protocol и Next.js, применяет миграцию дважды и запускает Playwright. Данные тестовые, находятся в памяти и уничтожаются при завершении. Он не использует `DATABASE_URL` из вашего `.env.local`. Порты 3100 и 54329 должны быть свободны; тестовый PostgreSQL-сервер доступен только на loopback и не предназначен для реального использования.
-
-Браузерный сценарий проходит: перенаправление неавторизованного пользователя → регистрация → создание/редактирование/удаление знания → перезагрузка и сохранность → второй аккаунт другой компании → попытки доступа к чужой записи → конфликт версии → сохранение настроек → мобильный экран → смена пароля → отказ старому паролю → вход новым → выход → заявка с лендинга → языки HTML. Дополнительный HTTP-сценарий проверяет Origin, отсутствие авторизации, неверный JSON, тип и размер тела, no-store.
-
-## Как повторить
+See `VERIFICATION.md` for the completed run and its limits.
 
 ```sh
 npm ci
@@ -31,15 +10,13 @@ npm test
 npx playwright install chromium
 npm run test:e2e
 npm run build
+npm audit
 ```
 
-Для Linux могут понадобиться системные библиотеки Chromium. В проверочной среде стандартный CDN браузера был недоступен, поэтому использовался Chromium 153 из `@sparticuz/chromium`, установленный отдельно от проекта. Запуск выполнен через предусмотренные в `playwright.config.ts` переменные `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` и `PLAYWRIGHT_CHROMIUM_ARGS`. Этот вспомогательный пакет и исполняемый файл не входят в архив. На обычном компьютере используйте браузер, устанавливаемый Playwright командой выше; дополнительные переменные не нужны.
+Tests create isolated PGlite databases; end-to-end uses the PostgreSQL wire protocol on 127.0.0.1:54329, an HTTP fixture on 54330 and Next on 3100. These ports must be free. The runner overrides DATABASE_URL and keys and does not use your production database. It removes only generated .next/dev within this test checkout. Do not run it alongside your own dev server in the same checkout.
 
-## Границы проверки
+The provider test transport honors only a loopback URL in development; production builds always use the fixed official provider hosts. Unit tests inject fetch explicitly. The Stripe SDK contract test uses a mock HTTP transport and real SDK signature verification. No billable OpenAI/Meta/Viber/Stripe calls are performed.
 
-- Не выполнялся deployment в ваш Vercel и не использовалась ваша внешняя PostgreSQL-база. PGlite не воспроизводит сетевые отказы, лимиты подключения и параллелизм управляемой БД целиком.
-- Браузерные тесты работали на dev-сервере по HTTP; production-сборка проверена отдельно. Secure cookie и HTTPS-домен требуют проверки после deployment.
-- Не проводились нагрузочный тест, независимый аудит безопасности, проверка восстановления резервной копии, Safari/Firefox и реальные мобильные устройства.
-- Реальные каналы, AI API, уведомления, платежи не тестировались: их пока нет в этом этапе.
+`npm run test:e2e -- omni.spec.ts` runs the messenger/team/report browser scenario alone. `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` and JSON-array `PLAYWRIGHT_CHROMIUM_ARGS` support an existing Chromium installation. The verification environment used a separately installed Chromium because the Playwright browser CDN was unavailable there; this helper binary is not included in the archive.
 
-Перед пилотом на целевом домене повторите вход двух компаний, сохранение/перезагрузку записи, выход, смену пароля и заявку. Сверьте заявку в БД или CSV-выгрузке. Успешная сборка сама по себе не проверяет настройки production-базы.
+PGlite tests SQL/transactions but does not substitute for load/concurrency/TLS testing against your deployed PostgreSQL. Use ACCEPTANCE_RU.md on your Vercel domain, real channel accounts and email/Stripe test mode before a client launch.
