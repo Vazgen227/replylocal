@@ -41,7 +41,7 @@ export function Field({
   );
 }
 export const selectClass =
-  "min-h-9 w-full rounded-lg border bg-background px-3 py-2 text-sm";
+  "min-h-10 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm";
 export function useTask() {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");

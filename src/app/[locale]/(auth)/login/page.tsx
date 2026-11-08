@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BrandMark } from "@/components/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -55,14 +56,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md shadow-xl border bg-card">
+    <div className="w-full max-w-md">
+      <Card className="w-full border bg-card shadow-[0_24px_60px_-32px_rgb(15_23_42/0.35)]">
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground font-bold text-lg mb-3 shadow-sm">
-            RL
-          </div>
-          <CardTitle className="text-2xl font-bold">{t("login")}</CardTitle>
-          <CardDescription className="text-xs">
+          <BrandMark className="mx-auto mb-3 size-12 rounded-2xl" />
+          <CardTitle className="text-2xl font-extrabold">{t("login")}</CardTitle>
+          <CardDescription className="text-sm">
             {t("loginSubtitle")}
           </CardDescription>
         </CardHeader>
@@ -74,7 +73,7 @@ export default function LoginPage() {
           )}
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs">
+              <Label htmlFor="email" className="text-sm">
                 {t("email")}
               </Label>
               <div className="relative">
@@ -87,7 +86,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 text-sm"
+                  className="h-11 pl-9 text-sm"
                 />
               </div>
             </div>
@@ -109,7 +108,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 text-sm"
+                  className="h-11 pl-9 text-sm"
                 />
               </div>
             </div>
@@ -117,7 +116,7 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col gap-3 pt-2">
             <Button
               type="submit"
-              className="w-full h-10 gap-2"
+              className="h-11 w-full gap-2"
               disabled={isLoading}
             >
               <span>{isLoading ? t("loggingIn") : t("login")}</span>

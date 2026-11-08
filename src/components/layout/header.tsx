@@ -32,24 +32,27 @@ export function Header() {
     }
   }
   return (
-    <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 md:px-6 py-2">
+    <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-2 border-b bg-card px-3 py-2 md:px-6">
       <div className="min-w-0">
-        <p className="max-w-48 truncate text-sm font-semibold">
+        <p className="max-w-48 truncate text-sm font-bold">
           {data.organization.name}
         </p>
         <p className="text-xs text-muted-foreground">{data.user.name}</p>
       </div>
       <WorkspaceSwitcher />
       <div className="flex items-center gap-1">
+        <div className="mr-1 flex items-center rounded-lg border bg-background p-0.5 text-xs font-semibold">
         {["uk", "ru", "en"].map((lang) => (
           <Link
             key={lang}
             href={path.replace(/^\/(uk|ru|en)(?=\/|$)/, `/${lang}`)}
-            className={`rounded px-2 py-1 text-xs ${locale === lang ? "bg-muted font-bold" : ""}`}
+            aria-current={locale === lang ? "true" : undefined}
+            className={`rounded-md px-2.5 py-1.5 transition-colors ${locale === lang ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
             {lang.toUpperCase()}
           </Link>
         ))}
+        </div>
         <Button
           variant="ghost"
           size="icon"
