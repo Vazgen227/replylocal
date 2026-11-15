@@ -569,7 +569,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="mt-auto border-t bg-card">
-        <div className={`${container} grid gap-8 py-12 sm:grid-cols-[2fr_1fr_1fr]`}>
+        <div className={`${container} grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]`}>
           <div>
             <div className="flex items-center gap-2.5 text-lg font-extrabold">
               <BrandMark />
@@ -605,6 +605,21 @@ export default function LandingPage() {
               <li>
                 <Link href={`/${locale}/demo`} className="hover:text-foreground">
                   {t("ctaSecondary")}
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          <nav aria-label={h("footerLegal")}>
+            <p className="mb-3 text-sm font-bold">{h("footerLegal")}</p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href={`/${locale}/privacy`} className="hover:text-foreground">
+                  {h("footerPrivacy")}
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/terms`} className="hover:text-foreground">
+                  {h("footerTerms")}
                 </Link>
               </li>
             </ul>

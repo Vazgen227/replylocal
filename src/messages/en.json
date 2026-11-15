@@ -416,7 +416,8 @@
     "namePlaceholder": "Alex",
     "bizPlaceholder": "Master Auto Care",
     "loggingIn": "Signing in...",
-    "registering": "Creating account..."
+    "registering": "Creating account...",
+    "legalNotice": "By signing up you accept the <terms>Terms of service</terms> and the <privacy>Privacy policy</privacy>."
   },
   "backend": {
     "loading": "Loading workspace…",
@@ -595,7 +596,8 @@
     "status": "Status",
     "connection": "Connection settings",
     "ready": "Website chat enabled",
-    "notReady": "Website chat disabled"
+    "notReady": "Website chat disabled",
+    "privacyLink": "How your data is handled"
   },
   "omni": {
     "channels": "Messaging channels",
@@ -1141,6 +1143,9 @@
     "s3t": "Channel",
     "s3d": "Connect Telegram, Viber or the website widget — customers write where they always have.",
     "s4t": "Test",
-    "s4d": "Send a test message and confirm the first booking — you are live."
+    "s4d": "Send a test message and confirm the first booking — you are live.",
+    "footerLegal": "Legal",
+    "footerPrivacy": "Privacy policy",
+    "footerTerms": "Terms of service"
   }
 }

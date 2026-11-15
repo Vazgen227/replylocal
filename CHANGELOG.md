@@ -6,6 +6,9 @@
 - Voice messages: Telegram voice/audio/video notes and WhatsApp audio are downloaded in the background job (never in the webhook) and transcribed with OpenAI (`gpt-4o-mini-transcribe` by default, car-service vocabulary hint). The transcript enters the chat as “🎤 …” and the assistant answers it like text. Notes over 5 minutes or 10 MB, transcription errors and the daily cap (300 per company) fall back to operator review. Viber and Instagram do not deliver voice notes to business bots.
 - `DATABASE_POOL_MAX` (default 3). The local PGlite e2e harness now uses one connection, which removes the intermittent omni e2e failure caused by interleaved queries on its single database session.
 - Migration `db/005_retention.sql`: run `npm run db:migrate` before deploying.
+- Privacy policy (`/privacy`) and terms of service (`/terms`) in uk/ru/en, linked from the landing footer, registration and the website chat consent. Operator details come from `LEGAL_OPERATOR_NAME`, `LEGAL_CONTACT_EMAIL` and `LEGAL_ADDRESS`; until all three are set the pages show a draft notice.
+- `npm run db:migrate` no longer fails when a migration was applied from a Windows checkout: checksums ignore line endings, real content changes are still rejected.
+- CI on GitHub Actions: lint, typecheck, unit tests, build and browser tests on every push and pull request.
 
 # ReplyLocal 0.5 (unreleased) — car service booking
 

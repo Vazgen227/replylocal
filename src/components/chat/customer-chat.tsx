@@ -263,7 +263,17 @@ export function CustomerChat({
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
             />
-            {t("consent")}
+            <span>
+              {t("consent")}{" "}
+              <a
+                href={`/${locale}/privacy`}
+                target="_blank"
+                rel="noopener"
+                className="underline underline-offset-2"
+              >
+                {t("privacyLink")}
+              </a>
+            </span>
           </label>
           {error && <ChatError code={error} />}
           <Button type="submit" disabled={pending}>

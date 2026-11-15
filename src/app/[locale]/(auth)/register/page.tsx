@@ -157,6 +157,21 @@ export default function RegisterPage() {
               <ArrowRight className="h-4 w-4" />
             </Button>
 
+            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+              {t.rich("legalNotice", {
+                terms: (chunks) => (
+                  <Link href={`/${locale}/terms`} target="_blank" className="underline underline-offset-2">
+                    {chunks}
+                  </Link>
+                ),
+                privacy: (chunks) => (
+                  <Link href={`/${locale}/privacy`} target="_blank" className="underline underline-offset-2">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </p>
+
             <div className="text-center text-xs text-muted-foreground">
               <Link href={`/${locale}/login`} className="hover:underline">
                 {t("alreadyHaveAccount")}
