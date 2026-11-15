@@ -20,7 +20,11 @@ export type Incoming = {
   timestamp: number;
   destination: { chatId: string; businessConnectionId?: string };
   attachment: boolean;
+  /** A voice note to transcribe in the background job (never downloaded in the webhook). */
+  media?: Media;
 };
+export type Media = { kind: "voice"; id: string; duration: number; size: number };
+const VOICE_PLACEHOLDER = "[Voice message: operator review required]";
 export type Receipt = { id: string; status: "delivered" | "read" | "failed" };
 export class ChannelFailure extends Error {
   constructor(
@@ -31,7 +35,7 @@ export class ChannelFailure extends Error {
     super(code);
   }
 }
-function version() {
+export function metaVersion() {
   const v = process.env.META_API_VERSION ?? "v24.0";
   if (!/^v\d+\.0$/.test(v)) throw new AppError(503, "META_VERSION_INVALID");
   return v;
@@ -121,7 +125,7 @@ export async function verifyConnection(
       : "user_id,username";
   const target = provider === "instagram" ? "me" : id;
   const data = await providerRequest(
-    `${base}/${version()}/${target}?fields=${fields}`,
+    `${base}/${metaVersion()}/${target}?fields=${fields}`,
     { headers: { Authorization: `Bearer ${creds.accessToken}` } },
     fetcher,
   );
@@ -253,7 +257,7 @@ export async function sendChannel(
         }
       : { recipient: { id: to }, message: { text } };
   const data = await providerRequest(
-    `${base}/${version()}/${id}/messages`,
+    `${base}/${metaVersion()}/${id}/messages`,
     {
       method: "POST",
       headers: {
@@ -292,6 +296,14 @@ export function parseChannel(
     v.text = Array.from(String(v.text).toWellFormed()).slice(0, 2000).join("");
     if (!Number.isFinite(v.timestamp)) v.timestamp = Date.now();
     v.timestamp = Math.min(v.timestamp, Date.now());
+    if (v.media) {
+      v.media = {
+        kind: "voice",
+        id: safeId(v.media.id),
+        duration: Math.max(0, Math.min(86400, Number(v.media.duration) || 0)),
+        size: Math.max(0, Number(v.media.size) || 0),
+      };
+    }
     incoming.push(v);
   };
   if (provider === "telegram") {
@@ -304,8 +316,11 @@ export function parseChannel(
     if (m.chat?.type !== "private") return { incoming, receipts };
     const chatId = String(m.chat.id),
       bc = m.business_connection_id;
+    const voice = m.voice ?? m.audio ?? m.video_note;
     const text =
-      m.text ?? m.caption ?? "[Attachment: operator review required]";
+      m.text ??
+      m.caption ??
+      (voice ? VOICE_PLACEHOLDER : "[Attachment: operator review required]");
     push({
       externalId: String(data.update_id),
       externalKey: (bc ? bc + ":" : "") + chatId,
@@ -317,6 +332,16 @@ export function parseChannel(
       timestamp: Number(m.date) * 1000,
       destination: { chatId, ...(bc ? { businessConnectionId: bc } : {}) },
       attachment: !m.text,
+      ...(voice?.file_id && !m.text && !m.caption
+        ? {
+            media: {
+              kind: "voice" as const,
+              id: String(voice.file_id),
+              duration: Number(voice.duration),
+              size: Number(voice.file_size),
+            },
+          }
+        : {}),
     });
   } else if (provider === "viber") {
     if (["delivered", "seen", "failed"].includes(data.event))
@@ -366,13 +391,18 @@ export function parseChannel(
               m.text?.body ??
               m.button?.text ??
               m.interactive?.button_reply?.title ??
-              "[Attachment: operator review required]",
+              (m.type === "audio"
+                ? VOICE_PLACEHOLDER
+                : "[Attachment: operator review required]"),
             timestamp: Number(m.timestamp) * 1000,
             destination: { chatId: from },
             attachment:
               m.type !== "text" &&
               m.type !== "button" &&
               m.type !== "interactive",
+            ...(m.type === "audio" && m.audio?.id
+              ? { media: { kind: "voice" as const, id: String(m.audio.id), duration: 0, size: 0 } }
+              : {}),
           });
         }
       }

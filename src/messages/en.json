@@ -840,7 +840,10 @@
       "minNoticeMinutes": "Minimum notice, min",
       "address": "Address (in confirmations)",
       "reminders": "Remind the customer a day before",
-      "remindersHint": "Sent to the customer's channel 24 hours before. WhatsApp, Instagram and Telegram Business deliver it only if the customer wrote within the last 24 hours."
+      "remindersHint": "Sent to the customer's channel 24 hours before. WhatsApp, Instagram and Telegram Business deliver it only if the customer wrote within the last 24 hours.",
+      "followUpMonths": "Next service in, months (0 — off)",
+      "followUpKm": "Service interval, km",
+      "followUpHint": "Used in the reminder text (“around … km on the odometer”) when mileage is known."
     },
     "templateButton": "Car service template",
     "templateHint": "Add typical car-service services and rules without prices. Existing entries are not changed.",
@@ -857,7 +860,56 @@
       "FORBIDDEN": "Not enough permissions.",
       "INVALID_SERVICE": "Service not found.",
       "KNOWLEDGE_LIMIT": "Knowledge limit reached.",
-      "NETWORK_ERROR": "No connection to the server."
+      "NETWORK_ERROR": "No connection to the server.",
+      "ALERTS_NOT_CONFIGURED": "The alert bot is not configured on the server.",
+      "TELEGRAM_NOT_LINKED": "Connect Telegram first.",
+      "PROVIDER_UNAVAILABLE": "Telegram is unavailable right now, try later.",
+      "RATE_LIMITED": "Too many attempts, wait a few minutes."
+    },
+    "repeatCustomer": "Returning customer: {count, plural, one {# visit} other {# visits}}",
+    "history": {
+      "title": "Customer history",
+      "none": "This customer has not visited before.",
+      "summary": "{visits, plural, one {# visit} other {# visits}} totalling {total}",
+      "lastVisit": "Last visit: {when}",
+      "vehicles": "Vehicles",
+      "searchTitle": "Find a customer by phone",
+      "searchLabel": "Customer phone",
+      "search": "Search",
+      "notFound": "No visits for this number.",
+      "visitsTitle": "Visits"
+    },
+    "followUp": {
+      "label": "Remind about the next service in, months",
+      "hint": "0 — no reminder. Telegram and Viber customers get a message automatically; for other channels a call task appears.",
+      "title": "Service follow-ups",
+      "intro": "A set time after the visit the customer gets “time for a service, shall we book you?”. If the customer has already booked again, nothing is sent.",
+      "empty": "No follow-ups yet. They appear when a visit is marked as done.",
+      "due": "Due: {when}",
+      "visit": "Visit: {when}",
+      "markDone": "Called",
+      "cancel": "Do not remind",
+      "status": {
+        "pending": "Scheduled",
+        "sent": "Message sent",
+        "call": "Call needed",
+        "done": "Done",
+        "cancelled": "Cancelled",
+        "skipped": "Already booked again"
+      }
+    },
+    "telegram": {
+      "title": "Telegram alerts",
+      "intro": "New booking requests arrive in your Telegram with Confirm and Decline buttons. The bot also tells you when a customer needs a reply from the team and when to call a customer about a service.",
+      "personal": "Each team member connects their own Telegram. Owners and admins get every alert; agents only for conversations assigned to them.",
+      "notConfigured": "The alert bot is not configured on the server: TELEGRAM_ALERT_BOT_TOKEN is required.",
+      "connect": "Connect Telegram",
+      "connectHint": "Telegram will open: press Start. The link is valid for 15 minutes.",
+      "waiting": "Waiting for you to press Start in Telegram…",
+      "linked": "Connected: alerts arrive in your Telegram.",
+      "test": "Send a test alert",
+      "testSent": "Test alert sent",
+      "disconnect": "Disconnect"
     }
   },
   "home": {

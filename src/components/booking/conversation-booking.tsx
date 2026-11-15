@@ -14,6 +14,7 @@ import {
   useBookingTask,
   useFormatter,
 } from "./booking-ui";
+import { ConversationHistory } from "./customer-history";
 
 type Data = {
   enabled: boolean;
@@ -112,6 +113,7 @@ export function ConversationBooking({ id, onChanged }: { id: string; onChanged: 
             <p className="text-sm text-muted-foreground">{t("noAppointmentYet")}</p>
           )}
         </section>
+        <ConversationHistory id={id} timeZone={data.timeZone} exclude={data.appointments.map((a) => a.id)} />
         <section className="space-y-3 border-t pt-4">
           <h3 className="font-semibold">{t("car")}</h3>
           <p className="text-xs text-muted-foreground">{t("carHint")}</p>

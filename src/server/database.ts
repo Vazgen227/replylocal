@@ -9,7 +9,8 @@ function pool() {
   if (!globalDb.replylocalPool) {
     globalDb.replylocalPool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 3,
+      // The local PGlite test harness has a single session and needs max=1.
+      max: Math.min(20, Math.max(1, Number(process.env.DATABASE_POOL_MAX) || 3)),
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 5000,
       statement_timeout: 10000,

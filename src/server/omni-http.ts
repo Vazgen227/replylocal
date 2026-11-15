@@ -19,3 +19,4 @@ export function wakeWorker() {
     }
   });
 }
+export const alerts = omni.alerts;

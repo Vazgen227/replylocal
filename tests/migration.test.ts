@@ -181,3 +181,43 @@ test("upgrade 0.4 → 0.5 keeps data, leaves booking off and accepts reminder jo
     await pg.close();
   }
 });
+test("upgrade 0.5 → 0.6 keeps appointments and derives the phone key for history", async () => {
+  const pg = await PGlite.create();
+  const query: Query = async (sql, params) =>
+    (await pg.query(sql, params)).rows as never;
+  const db: Database = {
+    query,
+    transaction: (work) =>
+      pg.transaction((tx) =>
+        work(async (sql, params) => (await tx.query(sql, params)).rows as never),
+      ),
+  };
+  try {
+    for (const name of ["001_initial.sql", "002_chat.sql", "003_omnichannel.sql", "004_service_station.sql"])
+      await pg.exec(await readFile(new URL(`../db/${name}`, import.meta.url), "utf8"));
+    const store = createStore(db);
+    const actor = (await store.identity(
+      await store.register({
+        name: "Garage Owner",
+        companyName: "Old Garage",
+        email: "garage06@example.test",
+        password: "existing long password",
+      }),
+    ))!;
+    await query(
+      "INSERT INTO appointments(id,organization_id,starts_at,duration_minutes,status,customer_phone) VALUES(gen_random_uuid(),$1,now(),60,'done','+380 (67) 111-22-33')",
+      [actor.organizationId],
+    );
+    await pg.exec(await readFile(new URL("../db/005_retention.sql", import.meta.url), "utf8"));
+    const [a] = await query<{ phone_key: string; amount: string | null }>("SELECT phone_key,amount FROM appointments");
+    assert.equal(a.phone_key, "671112233");
+    assert.equal(a.amount, null);
+    await query(
+      "INSERT INTO background_jobs(id,key,organization_id,kind,payload) VALUES(gen_random_uuid(),'f1',$1,'followup','{}')",
+      [actor.organizationId],
+    );
+    assert.equal((await query("SELECT * FROM telegram_links")).length, 0);
+  } finally {
+    await pg.close();
+  }
+});

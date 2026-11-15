@@ -7,6 +7,8 @@ import { AppError } from "./errors";
 import { digest, newToken } from "./passwords";
 import { seal, unseal, equalSecret, validHmac } from "./crypto-secrets";
 import { createBookingStore } from "./booking-store";
+import { createAlertStore } from "./telegram-alerts";
+import { fetchVoice, openAITranscriber, type Transcriber } from "./transcribe";
 import {
   ChannelFailure,
   parseChannel,
@@ -54,6 +56,8 @@ type Job = {
     text?: string;
     booking?: string;
     startsAt?: string;
+    followup?: string;
+    tgSent?: boolean;
   };
   attempts: number;
   lock_token: string;
@@ -99,9 +103,11 @@ export function createOmniStore(
   db: Database,
   chats: ReturnType<typeof createChatStore>,
   fetcher: typeof fetch = fetch,
+  transcriber: Transcriber = openAITranscriber,
 ) {
   const base = createStore(db);
   const bookings = createBookingStore(db);
+  const alerts = createAlertStore(db, bookings, fetcher);
   async function connection(id: string, org?: string) {
     const [r] = await db.query<Row>(
       "SELECT * FROM channel_connections WHERE id=$1" +
@@ -198,14 +204,23 @@ export function createOmniStore(
       );
       return id;
     });
-    await chats.post(
-      id,
-      "",
-      eventId,
-      event.text || "[Attachment]",
-      r.organization_id,
-      event.attachment,
-    );
+    let text = event.text || "[Attachment]",
+      attachment = event.attachment;
+    if (event.media) {
+      // Best effort: a failed transcription falls back to operator review, never blocks the chat.
+      try {
+        await base.rateLimit("transcribe:" + r.organization_id, 300, 86400);
+        const audio = await fetchVoice(r.provider, creds, r.settings, event.media, fetcher);
+        const transcript = (await transcriber(audio)).trim();
+        if (transcript) {
+          text = "🎤 " + Array.from(transcript).slice(0, 1990).join("");
+          attachment = false;
+        }
+      } catch {
+        /* keep the placeholder */
+      }
+    }
+    await chats.post(id, "", eventId, text, r.organization_id, attachment);
   }
   async function delivery(id: string) {
     const [row] = await db.query<{
@@ -303,45 +318,87 @@ export function createOmniStore(
     }
   }
   async function notify(job: Job) {
-    const [c] = await db.query<{
-      organization_id: string;
-      assigned_to: string | null;
-      mode: string;
-      status: string;
-      channel: string;
-      visitor_name: string;
-      name: string;
-    }>(
-      `SELECT c.*,o.name FROM conversations c JOIN organizations o ON o.id=c.organization_id WHERE c.id=$1`,
-      [job.payload.id],
-    );
-    if (
-      !c ||
-      (c.mode !== "human" && !job.payload.booking) ||
-      c.status !== "open"
-    )
-      return;
-    const [prefs] = await db.query(
-      "SELECT enabled FROM notification_preferences WHERE organization_id=$1",
-      [c.organization_id],
-    );
-    if (prefs?.enabled === false) return;
+    let org: string,
+      assigned: string | null = null,
+      subject: string,
+      body: string;
+    const telegram = async (send: () => Promise<number>) => {
+      if (job.payload.tgSent) return true;
+      const reached = await send().catch(() => 0);
+      if (reached)
+        await db.query(
+          "UPDATE background_jobs SET payload=payload||'{\"tgSent\":true}'::jsonb WHERE id=$1",
+          [job.id],
+        );
+      return reached > 0;
+    };
+    let reached: boolean;
+    if (job.payload.followup) {
+      const f = await bookings.describeFollowup(job.payload.followup);
+      if (!f) return;
+      org = f.organization_id;
+      subject = `${f.company}: пора напомнить о ТО / service reminder due`;
+      body = `${f.customer_name} · ${f.customer_phone}
+${appURL()}/ru/appointments
+Позвоните клиенту и предложите записаться на плановое ТО.`;
+      const [prefs] = await db.query("SELECT enabled FROM notification_preferences WHERE organization_id=$1", [org]);
+      if (prefs?.enabled === false) return;
+      reached = await telegram(() => alerts.followup(job.payload.followup!));
+    } else {
+      const [c] = await db.query<{
+        organization_id: string;
+        assigned_to: string | null;
+        mode: string;
+        status: string;
+        channel: string;
+        visitor_name: string;
+        name: string;
+      }>(
+        `SELECT c.*,o.name FROM conversations c JOIN organizations o ON o.id=c.organization_id WHERE c.id=$1`,
+        [job.payload.id],
+      );
+      if (
+        !c ||
+        (c.mode !== "human" && !job.payload.booking) ||
+        c.status !== "open"
+      )
+        return;
+      const [prefs] = await db.query(
+        "SELECT enabled FROM notification_preferences WHERE organization_id=$1",
+        [c.organization_id],
+      );
+      if (prefs?.enabled === false) return;
+      org = c.organization_id;
+      assigned = c.assigned_to;
+      subject = job.payload.booking
+        ? `${c.name}: новая заявка на запись / new booking request`
+        : `${c.name}: требуется ответ / reply needed`;
+      body = `${c.visitor_name} · ${c.channel}
+${appURL()}/ru/inbox/${job.payload.id}
+Откройте кабинет, чтобы прочитать обращение и ответить.`;
+      reached = await telegram(() =>
+        job.payload.booking
+          ? alerts.booking(job.payload.booking, c.assigned_to)
+          : alerts.handoff(job.payload.id!),
+      );
+    }
+    // Email stays as a fallback; Telegram alone is enough when email is not set up.
+    if (!emailConfigured() && reached) return;
     const recipients = await db.query<{ email: string }>(
       `SELECT u.email FROM memberships m JOIN users u ON u.id=m.user_id WHERE m.organization_id=$1 AND (CASE WHEN $2::uuid IS NOT NULL THEN m.user_id=$2 ELSE m.role IN ('owner','admin') END)`,
-      [c.organization_id, c.assigned_to],
+      [org, assigned],
     );
     if (recipients.length)
       await sendEmail(
         recipients.map((v) => v.email),
-        job.payload.booking
-          ? `${c.name}: новая заявка на запись / new booking request`
-          : `${c.name}: требуется ответ / reply needed`,
-        `${c.visitor_name} · ${c.channel}\n${appURL()}/ru/inbox/${job.payload.id}\nОткройте кабинет, чтобы прочитать обращение и ответить.`,
+        subject,
+        body,
         job.id,
         fetcher,
       );
   }
   return {
+    alerts,
     async connections(actor: Identity): Promise<Connection[]> {
       const rows = await db.query<Row>(
         "SELECT * FROM channel_connections WHERE organization_id=$1 ORDER BY created_at",
@@ -657,6 +714,16 @@ export function createOmniStore(
         } else if (job.kind === "delivery") await delivery(job.payload.id!);
         else if (job.kind === "notification") await notify(job);
         else if (job.kind === "reminder") await bookings.remind(job.payload);
+        else if (job.kind === "followup") {
+          if ((await bookings.runFollowup(job.payload)) === "call")
+            await enqueue(
+              db.query,
+              "notify:followup:" + job.payload.id,
+              job.organization_id,
+              "notification",
+              { followup: job.payload.id },
+            );
+        }
         else if (job.kind === "email") {
           const mail = unseal<{ to: string; subject: string; text: string }>(
             (job.payload as unknown as { encrypted: string }).encrypted,

@@ -11,6 +11,8 @@ import {
   NewAppointmentDialog,
   useFormatter,
 } from "@/components/booking/booking-ui";
+import { PhoneLookup } from "@/components/booking/customer-history";
+import { FollowupsCard } from "@/components/booking/followups";
 
 type Settings = { settings: BookingSettings; version: number; timeZone: string };
 function Week({ config }: { config: Settings }) {
@@ -105,13 +107,19 @@ export default function Appointments() {
   const t = useTranslations("booking");
   const { data, error } = useRemote<Settings>("/api/booking/settings");
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">{t("intro")}</p>
       </div>
       <BookingError code={error} />
       {data && <Week config={data} />}
+      {data && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <FollowupsCard timeZone={data.timeZone} />
+          <PhoneLookup timeZone={data.timeZone} />
+        </div>
+      )}
     </div>
   );
 }

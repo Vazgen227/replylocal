@@ -1,3 +1,12 @@
+# ReplyLocal 0.6 (unreleased) — repeat customers and Telegram alerts
+
+- Team alerts in Telegram: each team member links a private chat once (Settings → Telegram alerts, one-time code valid 15 minutes). New booking requests arrive with Confirm and Decline buttons; a tap runs the same checks as the workspace (role, version, capacity) and notifies the customer. Declining takes a second tap. Alerts also cover conversations waiting for a person and follow-ups that need a call. Email remains a fallback; Telegram alone is enough when email is not configured. Requires `TELEGRAM_ALERT_BOT_TOKEN` (a separate bot) and an https `APP_URL`.
+- Customer history by phone: phone numbers are normalized to their last 9 digits, so +380 50 111-22-33 and 0501112233 match. Appointment cards show “Returning customer: N visits”, the conversation panel shows earlier visits with amounts and cars, and the Appointments page has a phone lookup. Completing a visit now stores its amount on the appointment.
+- Next-service follow-ups: completing a visit schedules “time for a service, shall we book you?” after N months (default 6, set per visit or in booking settings; 0 turns it off), with the expected mileage when known. Sent automatically to Telegram bot and Viber chats; for other channels or phone-only customers it becomes a call task with an alert. Skipped if the customer has already booked again. New `followup` job kind and a follow-ups list on the Appointments page.
+- Voice messages: Telegram voice/audio/video notes and WhatsApp audio are downloaded in the background job (never in the webhook) and transcribed with OpenAI (`gpt-4o-mini-transcribe` by default, car-service vocabulary hint). The transcript enters the chat as “🎤 …” and the assistant answers it like text. Notes over 5 minutes or 10 MB, transcription errors and the daily cap (300 per company) fall back to operator review. Viber and Instagram do not deliver voice notes to business bots.
+- `DATABASE_POOL_MAX` (default 3). The local PGlite e2e harness now uses one connection, which removes the intermittent omni e2e failure caused by interleaved queries on its single database session.
+- Migration `db/005_retention.sql`: run `npm run db:migrate` before deploying.
+
 # ReplyLocal 0.5 (unreleased) — car service booking
 
 - Online booking for car service stations (Settings → Online booking): working hours per weekday, number of bays, slot step, default duration, booking horizon, minimum notice and the address used in confirmations. Off by default.

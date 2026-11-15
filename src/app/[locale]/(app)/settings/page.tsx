@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TeamManager, BillingPanel } from "@/components/omni/team-manager";
 import { BookingSettingsCard } from "@/components/booking/booking-settings";
+import { TelegramAlertsCard } from "@/components/booking/telegram-alerts";
 export default function Settings() {
   const { data, reload } = useWorkspace();
   const t = useTranslations("backend"),
@@ -184,6 +185,7 @@ export default function Settings() {
           {busy ? t("saving") : t("save")}
         </Button>
       </form>
+      <TelegramAlertsCard />
       <BookingSettingsCard />
       <TeamManager />
       <Card>

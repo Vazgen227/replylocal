@@ -8,8 +8,10 @@ import {
   localInfo,
   intakeFields,
   type Appointment,
+  type BookingSettings,
   type Intake,
   type Slot,
+  vehicleLabel,
 } from "@/lib/booking";
 import { useWorkspace } from "@/components/workspace-provider";
 import { Button } from "@/components/ui/button";
@@ -329,6 +331,17 @@ export function NewAppointmentDialog({
   );
 }
 
+/** Months until the next-service reminder; defaults to the company setting. */
+function FollowUpField({ value, onChange }: { value: string | null; onChange: (v: string) => void }) {
+  const t = useTranslations("booking");
+  const { data } = useRemote<{ settings: BookingSettings }>("/api/booking/settings");
+  const shown = value ?? (data ? String(data.settings.followUpMonths) : "");
+  return (
+    <Field label={t("followUp.label")}>
+      <Input type="number" min={0} max={36} step={1} value={shown} onChange={(e) => onChange(e.target.value)} />
+    </Field>
+  );
+}
 type Mode = null | "reschedule" | "complete";
 export function AppointmentCard({
   appointment: a,
@@ -352,6 +365,7 @@ export function AppointmentCard({
     [duration, setDuration] = useState(a.durationMinutes),
     [amount, setAmount] = useState(""),
     [profit, setProfit] = useState(""),
+    [followUp, setFollowUp] = useState<string | null>(null),
     [force, setForce] = useState(false);
   const notify = !!a.conversationId;
   const act = (body: Record<string, unknown>) =>
@@ -361,7 +375,7 @@ export function AppointmentCard({
       onChanged();
     });
   const active = a.status === "requested" || a.status === "confirmed";
-  const vehicle = [a.vehicle.vehicle, a.vehicle.year, a.vehicle.plate].filter(Boolean).join(" · ");
+  const vehicle = vehicleLabel(a.vehicle);
   return (
     <article className="space-y-3 rounded-xl border bg-background p-4 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -378,6 +392,11 @@ export function AppointmentCard({
           {a.note && <p className="break-words italic text-muted-foreground">{a.note}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {a.visits > 0 && (
+            <Badge variant="outline" className="border-success/40 text-success">
+              {t("repeatCustomer", { count: a.visits })}
+            </Badge>
+          )}
           {a.source === "ai" && <Badge variant="outline">{t("fromAi")}</Badge>}
           {a.channel && <Badge variant="outline">{channels.has(a.channel) ? channels(a.channel) : a.channel}</Badge>}
           <StatusBadge status={a.status} />
@@ -452,7 +471,12 @@ export function AppointmentCard({
           className="space-y-3 border-t pt-3"
           onSubmit={(e) => {
             e.preventDefault();
-            void act({ action: "complete", amount: Number(amount), grossProfit: profit === "" ? null : Number(profit) });
+            void act({
+              action: "complete",
+              amount: Number(amount),
+              grossProfit: profit === "" ? null : Number(profit),
+              ...(followUp !== null && followUp !== "" ? { followUpMonths: Number(followUp) } : {}),
+            });
           }}
         >
           <p className="text-muted-foreground">{t("completeHint", { currency: data.organization.currency })}</p>
@@ -463,7 +487,9 @@ export function AppointmentCard({
             <Field label={t("grossProfit")}>
               <Input type="number" step="0.01" value={profit} onChange={(e) => setProfit(e.target.value)} />
             </Field>
+            <FollowUpField value={followUp} onChange={setFollowUp} />
           </div>
+          <p className="text-xs text-muted-foreground">{t("followUp.hint")}</p>
           <div className="flex gap-2">
             <Button size="sm" disabled={task.busy}>{t("save")}</Button>
             <Button size="sm" type="button" variant="outline" onClick={() => setMode(null)}>{t("close")}</Button>

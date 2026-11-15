@@ -96,6 +96,7 @@ before(async () => {
     "002_chat.sql",
     "003_omnichannel.sql",
     "004_service_station.sql",
+    "005_retention.sql",
   ])
     await pg.exec(await readFile(new URL("../db/" + file, import.meta.url), "utf8"));
   for (const name of ["Alice", "Bob"]) {

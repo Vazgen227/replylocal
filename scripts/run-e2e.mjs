@@ -168,6 +168,8 @@ const env = {
   ...process.env,
   NODE_ENV: "development",
   DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54329/postgres",
+  // PGlite behind a socket is one database session: concurrent connections would interleave.
+  DATABASE_POOL_MAX: "1",
   APP_URL: "http://127.0.0.1:3100",
   ALLOW_SIGNUP: "true",
   CHANNEL_ENCRYPTION_KEY: Buffer.alloc(32, 5).toString("base64"),

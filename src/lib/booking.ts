@@ -18,6 +18,9 @@ export const bookingSettingsSchema = z
     minNoticeMinutes: z.number().int().min(0).max(10080),
     reminders: z.boolean(),
     address: z.string().trim().max(500),
+    // Next-service follow-up after a finished visit. 0 months turns it off.
+    followUpMonths: z.number().int().min(0).max(36),
+    followUpKm: z.number().int().min(0).max(100000),
   })
   .strict();
 export type BookingSettings = z.infer<typeof bookingSettingsSchema>;
@@ -39,6 +42,8 @@ export const defaultBookingSettings: BookingSettings = {
   minNoticeMinutes: 60,
   reminders: true,
   address: "",
+  followUpMonths: 6,
+  followUpKm: 10000,
 };
 export function normalizeBookingSettings(raw: unknown): BookingSettings {
   const merged = {
@@ -111,7 +116,50 @@ export type Appointment = {
   version: number;
   channel: string | null;
   createdAt: string;
+  amount: number | null;
+  /** Earlier finished visits of the same customer (phone or chat). */
+  visits: number;
 };
+/** "Skoda Octavia · 2015 · AA1234BB"; the year is skipped when the model name already has it. */
+export function vehicleLabel(v: Intake | null | undefined, separator = " · ") {
+  if (!v) return "";
+  const name = v.vehicle?.trim() ?? "";
+  const year = v.year?.trim() && !name.includes(v.year.trim()) ? v.year.trim() : "";
+  return [name, year, v.plate?.trim()].filter(Boolean).join(separator);
+}
+/** Last 9 digits identify a Ukrainian number regardless of +380 / 0 prefixes. */
+export function phoneKey(phone: string | null | undefined) {
+  const digits = String(phone ?? "").replace(/\D/g, "");
+  return digits.length >= 9 ? digits.slice(-9) : null;
+}
+export type CustomerHistory = {
+  visits: number;
+  total: number;
+  currency: string;
+  lastVisitAt: string | null;
+  vehicles: string[];
+  appointments: Appointment[];
+};
+export const followupStatuses = ["pending", "sent", "call", "done", "cancelled", "skipped"] as const;
+export type Followup = {
+  id: string;
+  appointmentId: string;
+  conversationId: string | null;
+  dueAt: string;
+  months: number;
+  status: (typeof followupStatuses)[number];
+  reason: string | null;
+  customerName: string;
+  customerPhone: string;
+  vehicle: Intake;
+  serviceTitle: string;
+  visitAt: string;
+  channel: string | null;
+  version: number;
+};
+export const followupActionSchema = z
+  .object({ action: z.enum(["cancel", "done"]), version: z.number().int().positive() })
+  .strict();
 export const createAppointmentSchema = z
   .object({
     conversationId: z.uuid().nullable(),
@@ -156,6 +204,8 @@ export const appointmentActionSchema = z.discriminatedUnion("action", [
         .min(-9999999999.99)
         .max(9999999999.99)
         .nullable(),
+      // Months until the "time for the next service" message; 0 = none.
+      followUpMonths: z.number().int().min(0).max(36).optional(),
     })
     .strict(),
 ]);

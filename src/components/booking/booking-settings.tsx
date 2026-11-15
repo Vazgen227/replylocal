@@ -110,6 +110,15 @@ function Form({ initial, reload }: { initial: Data; reload: () => Promise<Data> 
             <span className="block text-muted-foreground">{t("settings.remindersHint")}</span>
           </span>
         </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("settings.followUpMonths")}>
+            <Input min={0} max={36} {...num("followUpMonths")} />
+          </Field>
+          <Field label={t("settings.followUpKm")}>
+            <Input min={0} max={100000} step={1000} {...num("followUpKm")} />
+          </Field>
+          <p className="text-xs text-muted-foreground sm:col-span-2">{t("settings.followUpHint")}</p>
+        </div>
         <BookingError code={task.error} />
         <Button disabled={task.busy}>{task.busy ? t("saving") : t("save")}</Button>
       </fieldset>

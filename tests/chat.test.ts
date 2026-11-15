@@ -69,7 +69,7 @@ async function start(actor = alice) {
   });
 }
 before(async () => {
-  for (const file of ["001_initial.sql", "002_chat.sql", "003_omnichannel.sql", "004_service_station.sql"])
+  for (const file of ["001_initial.sql", "002_chat.sql", "003_omnichannel.sql", "004_service_station.sql", "005_retention.sql"])
     await pg.exec(
       await readFile(new URL("../db/" + file, import.meta.url), "utf8"),
     );
